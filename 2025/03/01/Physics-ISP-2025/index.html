@@ -39,6 +39,18 @@
   
 <link rel="stylesheet" href="/css/style.css">
 
+
+  
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+  
 </head>
 <body>
   <div class="root-container">
@@ -108,7 +120,7 @@
           
             <h2 class="last-time">
               <span>最后更新于</span>
-              <time  class="article-updated" datetime="2025-03-05T21:45:09.719Z" itemprop="dateUpdated">2025-03-05</time>
+              <time  class="article-updated" datetime="2025-03-05T22:46:47.780Z" itemprop="dateUpdated">2025-03-05</time>
             </h2>
           
           
@@ -146,222 +158,336 @@
       
       <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
         <!-- 这里是正文内容，使用 Markdown 语法 -->
-<h1>Introduction: The Physical Code of the Steel Behemoth</h1>
+<h1
+id="introduction-the-physical-code-of-the-steel-behemoth">Introduction:
+The Physical Code of the Steel Behemoth</h1>
 <blockquote>
-<p><em>“In the dawn of the East China Sea…”</em><br>
-The Fujian aircraft carrier slices through morning swells, its electromagnetic systems humming with latent energy. Captain Lin Hai monitors approaching weather patterns on holographic displays, where typhoon data pulses in rhythmic warning. Every rivet on this 80,000-ton marvel whispers tales of Newton and Maxwell.</p>
+<p><em>"In the dawn of the East China Sea..."</em><br />
+The Fujian aircraft carrier slices through morning swells, its
+electromagnetic systems humming with latent energy. Captain Lin Hai
+monitors approaching weather patterns on holographic displays, where
+typhoon data pulses in rhythmic warning. Every rivet on this 80,000-ton
+marvel whispers tales of Newton and Maxwell.</p>
 </blockquote>
-<hr>
-<h2 id="Chapter-1-The-Kiss-of-Death-in-the-Storm">Chapter 1: The Kiss of Death in the Storm</h2>
-<p><strong>Aircraft Carrier Fujian is moving north at a speed of 40 km/h, with its bow heading north and stern south. Strong winds are blowing over the sea at a speed of 20 m/s southward relative to the carrier. The J-35 (carrier-based aircraft) lands at a speed of 260 km/h northward relative to the wind. The landing weight of the J-35 is 17.5 tons, and the effective landing distance on the deck runway is 100 meters. The coefficient of kinetic friction between the tires and the deck runway is 0.8. (Neglecting air resistance, <img src="/images/7ce733a08714a48f0efadd5fe98fd376.png" alt="公式描述" style="vertical-align: middle; height: 100px"> )</strong></p>
-<p><strong>Information Extraction:</strong></p>
-<ul>
-<li><strong>Carrier velocity</strong>: 40 km/h northbound</li>
-<li><strong>Wind velocity</strong>: 20 m/s southward (relative to the carrier)</li>
-<li><strong>J-35 landing speed</strong>: 260 km/h northward (relative to wind)</li>
-<li><strong>Landing weight</strong>: 17.5 tonnes</li>
-<li><strong>Deck runway</strong>: 100m effective distance</li>
-<li><strong>Friction coefficient</strong>: 0.8 (dry deck)</li>
-</ul>
+<hr />
+<h2 id="chapter-1-the-kiss-of-death-in-the-storm">Chapter 1: The Kiss of
+Death in the Storm</h2>
+<p><strong>Aircraft Carrier Fujian is moving north at a speed of 40
+km/h, with its bow heading north and stern south. Strong winds are
+blowing over the sea at a speed of 20 m/s southward relative to the
+carrier. The J-35 (carrier-based aircraft) lands at a speed of 260 km/h
+northward relative to the wind. The landing weight of the J-35 is 17.5
+tons, and the effective landing distance on the deck runway is 100
+meters. The coefficient of kinetic friction between the tires and the
+deck runway is 0.8. (Neglecting air resistance, $ g = 9.81 m⁄s^2 [down]
+$)</strong></p>
+<p><strong>Information Extraction:</strong><br />
+- <strong>Carrier velocity</strong>: 40 km/h northbound<br />
+- <strong>Wind velocity</strong>: 20 m/s southward (relative to the
+carrier) - <strong>J-35 landing speed</strong>: 260 km/h northward
+(relative to wind)<br />
+- <strong>Landing weight</strong>: 17.5 tonnes<br />
+- <strong>Deck runway</strong>: 100m effective distance<br />
+- <strong>Friction coefficient</strong>: 0.8 (dry deck)</p>
 <blockquote>
-<p><em>“Deck wind speed has exceeded critical threshold!”</em><br>
-Pilot Wang Ying’s gloved hands dance across controls as crosswinds buffet the J-35. The heads-up display flickers with velocity vectors—a ballet of relative motion where every joule of energy demands accounting.</p>
+<p><em>"Deck wind speed has exceeded critical threshold!"</em><br />
+Pilot Wang Ying's gloved hands dance across controls as crosswinds
+buffet the J-35. The heads-up display flickers with velocity vectors—a
+ballet of relative motion where every joule of energy demands
+accounting.</p>
 </blockquote>
-<hr>
-<h3 id="Question-A-Emergency-Landing-Dynamics">Question A: Emergency Landing Dynamics</h3>
-<p><strong>The J-35’s landing relies mainly on friction and arresting cables. If the J-35 must come to a complete stop within 100 meters, calculate its average acceleration, braking force provided by friction, and braking force provided by the arresting cables.</strong></p>
-<p><strong>Calculate</strong>:</p>
-<ol>
-<li>Average acceleration</li>
-<li>Braking force provided by friction</li>
-<li>Braking force provided by the arresting cables</li>
-</ol>
-<h4 id="1-Average-Acceleration"><strong>1. Average Acceleration</strong></h4>
-<p><strong>Given:</strong></p>
-<ul>
-<li>Carrier velocity: $40 \ \text{km/h} = 11.11 \ \text{m/s (north)}$</li>
-<li>Wind velocity: $20 \ \text{m/s (south relative to carrier)}$</li>
-<li>J-35 speed relative to wind: $260 \ \text{km/h} = 72.22 \ \text{m/s (north)}$</li>
-<li><strong>J-35 speed relative to carrier</strong>: $$ v_{\text{J-35/carrier}} = v_{\text{J-35/wind}} + v_{\text{wind/carrier}} = 72.22 \ \text{m/s} - 20 \ \text{m/s} = 52.22 \ \text{m/s [North]} $$</li>
-</ul>
-<h2 id="1-Average-Acceleration-2"><strong>1. Average Acceleration</strong></h2>
-<p><strong>Formula</strong>:<br>
-$$ v^2 = u^2 + 2as \quad \Rightarrow \quad a = \frac{v^2 - u^2}{2s} $$</p>
-<p><strong>Calculation</strong>:<br>
-$$<br>
-a = \frac{0^2 - (52.22)^2}{2 \times 100} = \frac{-2726.3}{200} = \boxed{-13.63 , \text{m/s}^2 , \text{(North)}}<br>
-$$</p>
-<hr>
-<h4 id="2-Braking-Force-from-Friction"><strong>2. Braking Force from Friction</strong></h4>
-<p><strong>Formula</strong>:<br>
-$$ F_{\text{friction}} = \mu \cdot m \cdot g $$<br>
-<strong>Calculating Friction Force</strong>:<br>
-$$ F_{\text{friction}} = 0.8 \times 17500 \ \text{kg} \times 9.81 \ \text{m/s}^2 = \boxed{137340 \ \text{N}} $$</p>
-<hr>
-<h4 id="3-Braking-Force-from-Arresting-Cables"><strong>3. Braking Force from Arresting Cables</strong></h4>
-<p><strong>Total Braking Force</strong>:<br>
-$$ F_{\text{total}} = m \cdot |a| = 17500 \ \text{kg} \times 13.63 \ \text{m/s}^2 = 238525 \ \text{N} $$<br>
-<strong>Calculating Force from Cables</strong>:<br>
-$$ F_{\text{cables}} = F_{\text{total}} - F_{\text{friction}} = 238525 \ \text{N} - 137340 \ \text{N} = \boxed{101185 \ \text{N}} $$</p>
-<hr>
+<hr />
+<h3 id="question-a-emergency-landing-dynamics">Question A: Emergency
+Landing Dynamics</h3>
+<p><strong>The J-35's landing relies mainly on friction and arresting
+cables. If the J-35 must come to a complete stop within 100 meters,
+calculate its average acceleration, braking force provided by friction,
+and braking force provided by the arresting cables.</strong></p>
+<p><strong>Calculate</strong>:<br />
+1. Average acceleration<br />
+2. Braking force provided by friction<br />
+3. Braking force provided by the arresting cables</p>
+<h4 id="average-acceleration"><strong>1. Average
+Acceleration</strong></h4>
+<p><strong>Given:</strong><br />
+- Carrier velocity: <span class="math inline">\(40 \ \text{km/h} = 11.11
+\ \text{m/s (north)}\)</span><br />
+- Wind velocity: <span class="math inline">\(20 \ \text{m/s (south
+relative to carrier)}\)</span><br />
+- J-35 speed relative to wind: <span class="math inline">\(260 \
+\text{km/h} = 72.22 \ \text{m/s (north)}\)</span><br />
+- <strong>J-35 speed relative to carrier</strong>: <span
+class="math display">\[ v_{\text{J-35/carrier}} = v_{\text{J-35/wind}} +
+v_{\text{wind/carrier}} = 72.22 \ \text{m/s} - 20 \ \text{m/s} = 52.22 \
+\text{m/s [North]} \]</span></p>
+<h2 id="average-acceleration-1"><strong>1. Average
+Acceleration</strong></h2>
+<p><strong>Formula</strong>:<br />
+<span class="math display">\[ v^2 = u^2 + 2as \quad \Rightarrow \quad a
+= \frac{v^2 - u^2}{2s} \]</span></p>
+<p><strong>Calculation</strong>:<br />
+<span class="math display">\[
+a = \frac{0^2 - (52.22)^2}{2 \times 100} = \frac{-2726.3}{200} =
+\boxed{-13.63 \, \text{m/s}^2 \, \text{(North)}}
+\]</span></p>
+<hr />
+<h4 id="braking-force-from-friction"><strong>2. Braking Force from
+Friction</strong></h4>
+<p><strong>Formula</strong>:<br />
+<span class="math display">\[ F_{\text{friction}} = \mu \cdot m \cdot g
+\]</span> <strong>Calculating Friction Force</strong>:<br />
+<span class="math display">\[ F_{\text{friction}} = 0.8 \times 17500 \
+\text{kg} \times 9.81 \ \text{m/s}^2 = \boxed{137340 \ \text{N}}
+\]</span></p>
+<hr />
+<h4 id="braking-force-from-arresting-cables"><strong>3. Braking Force
+from Arresting Cables</strong></h4>
+<p><strong>Total Braking Force</strong>:<br />
+<span class="math display">\[ F_{\text{total}} = m \cdot |a| = 17500 \
+\text{kg} \times 13.63 \ \text{m/s}^2 = 238525 \ \text{N} \]</span>
+<strong>Calculating Force from Cables</strong>:<br />
+<span class="math display">\[ F_{\text{cables}} = F_{\text{total}} -
+F_{\text{friction}} = 238525 \ \text{N} - 137340 \ \text{N} =
+\boxed{101185 \ \text{N}} \]</span></p>
+<hr />
 <blockquote>
-<p>Rain suddenly sheets across the flight deck. The tactical screen blooms crimson alerts as friction coefficients plummet…</p>
+<p>Rain suddenly sheets across the flight deck. The tactical screen
+blooms crimson alerts as friction coefficients plummet...</p>
 </blockquote>
-<hr>
-<h3 id="Question-B-Storm-Conditions-Adjustment">Question B: Storm Conditions Adjustment</h3>
-<p><strong>The storm brings heavy rain, making the deck slippery and reducing the coefficient of kinetic friction to 0.3. Each arresting cable can provide a maximum braking force of $ 1×10^5 N $. Determine the minimum number of arresting cables the J-35 needs to catch to stop completely within 100 meters.</strong></p>
-<p><strong>Modified Parameters</strong>:</p>
-<ul>
-<li>$\mu_k \rightarrow 0.3$ (wet deck)</li>
-<li>Arresting cable capacity: $1 \times 10^5\ \text{N}$ per cable</li>
-</ul>
-<p><strong>Task</strong>:<br>
-Determine minimum number of arresting cables required for safe stop within 100m.</p>
-<h4 id="1-Reduced-Friction-Force"><strong>1. Reduced Friction Force</strong></h4>
-<p><strong>New friction coefficient</strong>: $\mu_{\text{rain}} = 0.3$<br>
-$$ F_{\text{friction, rain}} = 0.3 \times 17500 \ \text{kg} \times 9.81 \ \text{m/s}^2 = 51502.5 \ \text{N} $$</p>
-<hr>
-<h4 id="2-Required-Arresting-Cables-Force"><strong>2. Required Arresting Cables Force</strong></h4>
-<p><strong>Total force still needed</strong>:<br>
-$$ F_{\text{total}} = 238525 \ \text{N} \quad (\text{unchanged from Question A}) $$<br>
-<strong>Force from cables</strong>:<br>
-$$ F_{\text{cables, rain}} = 238525 \ \text{N} - 51502.5 \ \text{N} = 186022.5 \ \text{N} $$</p>
-<hr>
-<h4 id="3-Minimum-Number-of-Cables"><strong>3. Minimum Number of Cables</strong></h4>
-<p><strong>Each cable provides</strong>: $1 \times 10^5 \ \text{N}$<br>
-$$ \text{Number of cables} = \left\lceil \frac{186022.5 \ \text{N}}{100000 \ \text{N}} \right\rceil = \left\lceil 1.86 \right\rceil = \boxed{2} $$</p>
-<p><strong>Verification</strong>:</p>
-<ul>
-<li>Total force with 2 cables: $2 \times 100000 \ \text{N} + 51502.5 \ \text{N} = 251502.5 \ \text{N}$</li>
-<li>Resulting acceleration:<br>
-$$ a = \frac{251502.5 \ \text{N}}{17500 \ \text{kg}} = 14.37 \ \text{m/s}^2 $$</li>
-<li>Stopping distance:<br>
-$$ s = \frac{u^2}{2a} = \frac{(52.22 \ \text{m/s})^2}{2 \times 14.37 \ \text{m/s}^2} = 94.8 \ \text{m} \ (\leq 100 \ \text{m}) $$</li>
-</ul>
-<hr>
+<hr />
+<h3 id="question-b-storm-conditions-adjustment">Question B: Storm
+Conditions Adjustment</h3>
+<p><strong>The storm brings heavy rain, making the deck slippery and
+reducing the coefficient of kinetic friction to 0.3. Each arresting
+cable can provide a maximum braking force of $ 1×10^5 N $. Determine the
+minimum number of arresting cables the J-35 needs to catch to stop
+completely within 100 meters.</strong></p>
+<p><strong>Modified Parameters</strong>:<br />
+- <span class="math inline">\(\mu_k \rightarrow 0.3\)</span> (wet
+deck)<br />
+- Arresting cable capacity: <span class="math inline">\(1 \times 10^5\
+\text{N}\)</span> per cable</p>
+<p><strong>Task</strong>:<br />
+Determine minimum number of arresting cables required for safe stop
+within 100m.</p>
+<h4 id="reduced-friction-force"><strong>1. Reduced Friction
+Force</strong></h4>
+<p><strong>New friction coefficient</strong>: <span
+class="math inline">\(\mu_{\text{rain}} = 0.3\)</span><br />
+<span class="math display">\[ F_{\text{friction, rain}} = 0.3 \times
+17500 \ \text{kg} \times 9.81 \ \text{m/s}^2 = 51502.5 \ \text{N}
+\]</span></p>
+<hr />
+<h4 id="required-arresting-cables-force"><strong>2. Required Arresting
+Cables Force</strong></h4>
+<p><strong>Total force still needed</strong>:<br />
+<span class="math display">\[ F_{\text{total}} = 238525 \ \text{N} \quad
+(\text{unchanged from Question A}) \]</span> <strong>Force from
+cables</strong>:<br />
+<span class="math display">\[ F_{\text{cables, rain}} = 238525 \
+\text{N} - 51502.5 \ \text{N} = 186022.5 \ \text{N} \]</span></p>
+<hr />
+<h4 id="minimum-number-of-cables"><strong>3. Minimum Number of
+Cables</strong></h4>
+<p><strong>Each cable provides</strong>: <span class="math inline">\(1
+\times 10^5 \ \text{N}\)</span><br />
+<span class="math display">\[ \text{Number of cables} = \left\lceil
+\frac{186022.5 \ \text{N}}{100000 \ \text{N}} \right\rceil = \left\lceil
+1.86 \right\rceil = \boxed{2} \]</span></p>
+<p><strong>Verification</strong>:<br />
+- Total force with 2 cables: <span class="math inline">\(2 \times 100000
+\ \text{N} + 51502.5 \ \text{N} = 251502.5 \ \text{N}\)</span><br />
+- Resulting acceleration:<br />
+<span class="math display">\[ a = \frac{251502.5 \ \text{N}}{17500 \
+\text{kg}} = 14.37 \ \text{m/s}^2 \]</span> - Stopping distance:<br />
+<span class="math display">\[ s = \frac{u^2}{2a} = \frac{(52.22 \
+\text{m/s})^2}{2 \times 14.37 \ \text{m/s}^2} = 94.8 \ \text{m} \ (\leq
+100 \ \text{m}) \]</span></p>
+<hr />
 <blockquote>
-<p>The squall relents momentarily, revealing new threats on radar scopes. Somewhere below decks, capacitor banks whine as they charge for the next challenge…</p>
+<p>The squall relents momentarily, revealing new threats on radar
+scopes. Somewhere below decks, capacitor banks whine as they charge for
+the next challenge...</p>
 </blockquote>
-<hr>
-<h2 id="Chapter-2-The-Physics-String-of-the-Electromagnetic-Longbow">Chapter 2: The Physics String of the Electromagnetic Longbow</h2>
-<p><strong>Aircraft Carrier Fujian’s Electromagnetic Aircraft Launch System (EMALS) converts electrical energy into kinetic energy to rapidly launch carrier-based aircraft. During takeoff, the J-35’s weight increases to 24 tons due to mounted missiles and weapons. (Neglecting air resistance, $ g=9.81 m⁄s^2  [down] $)</strong></p>
-<p><strong>Information Extraction:</strong></p>
-<ul>
-<li><strong>J-35 takeoff mass</strong>: 24 tonnes</li>
-<li><strong>Gravitational acceleration</strong>: $g = 9.81\ \text{m/s}^2$</li>
-</ul>
+<hr />
+<h2
+id="chapter-2-the-physics-string-of-the-electromagnetic-longbow">Chapter
+2: The Physics String of the Electromagnetic Longbow</h2>
+<p><strong>Aircraft Carrier Fujian's Electromagnetic Aircraft Launch
+System (EMALS) converts electrical energy into kinetic energy to rapidly
+launch carrier-based aircraft. During takeoff, the J-35’s weight
+increases to 24 tons due to mounted missiles and weapons. (Neglecting
+air resistance, $ g=9.81 m⁄s^2 [down] $)</strong></p>
+<p><strong>Information Extraction:</strong><br />
+- <strong>J-35 takeoff mass</strong>: 24 tonnes<br />
+- <strong>Gravitational acceleration</strong>: <span
+class="math inline">\(g = 9.81\ \text{m/s}^2\)</span></p>
 <blockquote>
-<p><em>“Flywheel spooling at 98% nominal…”</em><br>
-Engineer Zhang’s monitor displays cascading energy graphs as the electromagnetic rail charges. Below decks, superconducting coils thrum with potential—a contained lightning storm waiting to throw aircraft skyward.</p>
+<p><em>"Flywheel spooling at 98% nominal..."</em><br />
+Engineer Zhang's monitor displays cascading energy graphs as the
+electromagnetic rail charges. Below decks, superconducting coils thrum
+with potential—a contained lightning storm waiting to throw aircraft
+skyward.</p>
 </blockquote>
-<hr>
-<h3 id="Question-A-EMALS-Energy-Transfer">Question A: EMALS Energy Transfer</h3>
-<p><strong>The EMALS accelerates the J-35 from rest to 260 km/h in 2.5 seconds. Given a rolling friction coefficient of 0.02 between the tires and the takeoff runway, calculate the minimum energy the EMALS must provide.</strong></p>
-<p><strong>Required</strong>:</p>
+<hr />
+<h3 id="question-a-emals-energy-transfer">Question A: EMALS Energy
+Transfer</h3>
+<p><strong>The EMALS accelerates the J-35 from rest to 260 km/h in 2.5
+seconds. Given a rolling friction coefficient of 0.02 between the tires
+and the takeoff runway, calculate the minimum energy the EMALS must
+provide.</strong></p>
+<p><strong>Required</strong>:<br />
+- Minimum energy provided by EMALS</p>
+<h4 id="calculate-kinetic-energy-ke"><strong>1. Calculate kinetic energy
+(KE)</strong></h4>
+<p><strong>Given</strong>:<br />
+- <span class="math inline">\(m = 24 \ \text{tonnes} = 24000 \
+\text{kg}\)</span><br />
+- <span class="math inline">\(v_{\text{final}} = 260 \ \text{km/h} =
+72.22 \ \text{m/s}\)</span><br />
+- <span class="math inline">\(\mu_{\text{rolling}} = 0.02\)</span><br />
+- <span class="math inline">\(t = 2.5 \ \text{s}\)</span></p>
+<p><span class="math display">\[ KE = \frac{1}{2} m v^2 = \frac{1}{2}
+\times 24000 \ \text{kg} \times (72.22 \ \text{m/s})^2 = 62588400 \
+\text{J} \]</span></p>
+<hr />
+<h4 id="calculate-work-done-against-friction"><strong>2. Calculate work
+done against friction</strong></h4>
 <ul>
-<li>Minimum energy provided by EMALS</li>
+<li><strong>Friction force</strong>:<br />
+<span class="math display">\[ F_{\text{friction}} = \mu \cdot m \cdot g
+= 0.02 \times 24000 \ \text{kg} \times 9.81 \ \text{m/s}^2 = 4708.8 \
+\text{N} \]</span></li>
+<li><strong>Distance traveled</strong>:<br />
+<span class="math display">\[ s = \frac{v_{\text{final}} \cdot t}{2} =
+\frac{72.22 \ \text{m/s} \times 2.5 \ \text{s}}{2} = 90.28 \ \text{m}
+\]</span></li>
+<li><strong>Work done by friction</strong>:<br />
+<span class="math display">\[ W_{\text{friction}} = F_{\text{friction}}
+\cdot s = 4708.8 \ \text{N} \times 90.28 \ \text{m} = 425000 \ \text{J}
+\]</span></li>
 </ul>
-<h4 id="1-Calculate-kinetic-energy-KE"><strong>1. Calculate kinetic energy (KE)</strong></h4>
-<p><strong>Given</strong>:</p>
-<ul>
-<li>$m = 24 \ \text{tonnes} = 24000 \ \text{kg}$</li>
-<li>$v_{\text{final}} = 260 \ \text{km/h} = 72.22 \ \text{m/s}$</li>
-<li>$\mu_{\text{rolling}} = 0.02$</li>
-<li>$t = 2.5 \ \text{s}$</li>
-</ul>
-<p>$$ KE = \frac{1}{2} m v^2 = \frac{1}{2} \times 24000 \ \text{kg} \times (72.22 \ \text{m/s})^2 = 62588400 \ \text{J} $$</p>
-<hr>
-<h4 id="2-Calculate-work-done-against-friction"><strong>2. Calculate work done against friction</strong></h4>
-<ul>
-<li><strong>Friction force</strong>:<br>
-$$ F_{\text{friction}} = \mu \cdot m \cdot g = 0.02 \times 24000 \ \text{kg} \times 9.81 \ \text{m/s}^2 = 4708.8 \ \text{N} $$</li>
-<li><strong>Distance traveled</strong>:<br>
-$$ s = \frac{v_{\text{final}} \cdot t}{2} = \frac{72.22 \ \text{m/s} \times 2.5 \ \text{s}}{2} = 90.28 \ \text{m} $$</li>
-<li><strong>Work done by friction</strong>:<br>
-$$ W_{\text{friction}} = F_{\text{friction}} \cdot s = 4708.8 \ \text{N} \times 90.28 \ \text{m} = 425000 \ \text{J} $$</li>
-</ul>
-<hr>
-<h4 id="3-Total-energy-required"><strong>3. Total energy required</strong></h4>
-<p>$$ E_{\text{total}} = KE + W_{\text{friction}} = 62588400 \ \text{J} + 425000 \ \text{J} = \boxed{63.0 \ \text{MJ}} $$</p>
-<hr>
+<hr />
+<h4 id="total-energy-required"><strong>3. Total energy
+required</strong></h4>
+<p><span class="math display">\[ E_{\text{total}} = KE +
+W_{\text{friction}} = 62588400 \ \text{J} + 425000 \ \text{J} =
+\boxed{63.0 \ \text{MJ}} \]</span></p>
+<hr />
 <blockquote>
-<p>Tactical displays suddenly bloom with hostile red icons—anti-ship missiles painting the carrier with target locks. The catapult rail hums up an octave as emergency protocols engage.</p>
+<p>Tactical displays suddenly bloom with hostile red icons—anti-ship
+missiles painting the carrier with target locks. The catapult rail hums
+up an octave as emergency protocols engage.</p>
 </blockquote>
-<hr>
-<h3 id="Question-B-Inclined-Launch-Dynamics">Question B: Inclined Launch Dynamics</h3>
-<p><strong>If the takeoff runway is inclined upward at 5° to assist with liftoff, calculate the magintude of work done by friction, the magintude of work done by gravity, and the minimum energy the EMALS must now provide.</strong></p>
-<p><strong>Modified Conditions</strong>:</p>
+<hr />
+<h3 id="question-b-inclined-launch-dynamics">Question B: Inclined Launch
+Dynamics</h3>
+<p><strong>If the takeoff runway is inclined upward at 5° to assist with
+liftoff, calculate the magintude of work done by friction, the magintude
+of work done by gravity, and the minimum energy the EMALS must now
+provide.</strong></p>
+<p><strong>Modified Conditions</strong>:<br />
+- Takeoff angle: 5° elevation</p>
+<p><strong>Determine</strong>:<br />
+1. Magintude of work done by friction<br />
+2. Magintude of work done by gravity<br />
+3. Minimum energy required</p>
+<hr />
+<h4 id="work-done-by-friction"><strong>1. Work done by
+friction</strong>:</h4>
 <ul>
-<li>Takeoff angle: 5° elevation</li>
+<li><strong>Normal force</strong>:<br />
+<span class="math display">\[ F_{\text{normal}} = m \cdot g \cdot
+\cos\theta = 24000 \ \text{kg} \times 9.81 \ \text{m/s}^2 \times \cos
+5^\circ = 234960 \ \text{N} \]</span></li>
+<li><strong>Friction force</strong>:<br />
+<span class="math display">\[ F_{\text{friction}} = \mu \cdot
+F_{\text{normal}} = 0.02 \times 234960 \ \text{N} = 4699.2 \ \text{N}
+\]</span></li>
+<li><strong>Work done by friction</strong>:<br />
+<span class="math display">\[ W_{\text{friction}} = F_{\text{friction}}
+\cdot s = 4699.2 \ \text{N} \times 90.28 \ \text{m} = \boxed{424000 \
+\text{J}} \]</span></li>
 </ul>
-<p><strong>Determine</strong>:</p>
-<ol>
-<li>Magintude of work done by friction</li>
-<li>Magintude of work done by gravity</li>
-<li>Minimum energy required</li>
-</ol>
-<hr>
-<h4 id="1-Work-done-by-friction"><strong>1. Work done by friction</strong>:</h4>
+<h4 id="work-done-by-gravity"><strong>2. Work done by
+gravity</strong>:</h4>
 <ul>
-<li><strong>Normal force</strong>:<br>
-$$ F_{\text{normal}} = m \cdot g \cdot \cos\theta = 24000 \ \text{kg} \times 9.81 \ \text{m/s}^2 \times \cos 5^\circ = 234960 \ \text{N} $$</li>
-<li><strong>Friction force</strong>:<br>
-$$ F_{\text{friction}} = \mu \cdot F_{\text{normal}} = 0.02 \times 234960 \ \text{N} = 4699.2 \ \text{N} $$</li>
-<li><strong>Work done by friction</strong>:<br>
-$$ W_{\text{friction}} = F_{\text{friction}} \cdot s = 4699.2 \ \text{N} \times 90.28 \ \text{m} = \boxed{424000 \ \text{J}} $$</li>
+<li><strong>Component of gravity along incline</strong>:<br />
+<span class="math display">\[ F_{\text{gravity}} = m \cdot g \cdot
+\sin\theta = 24000 \ \text{kg} \times 9.81 \ \text{m/s}^2 \times \sin
+5^\circ = 20533 \ \text{N} \]</span></li>
+<li><strong>Work done by gravity</strong>:<br />
+<span class="math display">\[ W_{\text{gravity}} = F_{\text{gravity}}
+\cdot s = 20533 \ \text{N} \times 90.28 \ \text{m} = \boxed{1853300 \
+\text{J}} \]</span></li>
 </ul>
-<h4 id="2-Work-done-by-gravity"><strong>2. Work done by gravity</strong>:</h4>
-<ul>
-<li><strong>Component of gravity along incline</strong>:<br>
-$$ F_{\text{gravity}} = m \cdot g \cdot \sin\theta = 24000 \ \text{kg} \times 9.81 \ \text{m/s}^2 \times \sin 5^\circ = 20533 \ \text{N} $$</li>
-<li><strong>Work done by gravity</strong>:<br>
-$$ W_{\text{gravity}} = F_{\text{gravity}} \cdot s = 20533 \ \text{N} \times 90.28 \ \text{m} = \boxed{1853300 \ \text{J}} $$</li>
-</ul>
-<h4 id="3-Minimum-energy-required"><strong>3. Minimum energy required</strong>:</h4>
-<p>$$ E_{\text{total}} = KE + W_{\text{friction}} + W_{\text{gravity}} = 62588400 \ \text{J} + 424000 \ \text{J} + 1853300 \ \text{J} = \boxed{64.9 \ \text{MJ}} $$</p>
-<hr>
+<h4 id="minimum-energy-required"><strong>3. Minimum energy
+required</strong>:</h4>
+<p><span class="math display">\[ E_{\text{total}} = KE +
+W_{\text{friction}} + W_{\text{gravity}} = 62588400 \ \text{J} + 424000
+\ \text{J} + 1853300 \ \text{J} = \boxed{64.9 \ \text{MJ}} \]</span></p>
+<hr />
 <blockquote>
-<p>In a battle where every second counts, there is no room for even a moment of respite—the moment one fighter jet clears the runway, the next immediately begins its descent…</p>
+<p>In a battle where every second counts, there is no room for even a
+moment of respite—the moment one fighter jet clears the runway, the next
+immediately begins its descent...</p>
 </blockquote>
-<hr>
-<h3 id="Question-C-Arrested-Landing-Analysis">Question C: Arrested Landing Analysis</h3>
-<p><strong>During landing, the J-35 fired all its missiles so that its remaining mass is 17.5 tons. It engaged the arresting cable at a speed of 200 km/h. The coefficient of kinetic friction between the tires and the deck is 0.8. After 5 seconds the aircraft comes to a complete stop, having used 60 meters of the landing runway. During this process the aircraft pulled an arresting cable which was stretched by 14 meters. Calculate the magnitude of the impulse applied on the J-35 during deceleration. The elastic potential energy stored in the arresting cable and the elasticity coefficient of the arresting cable. (Assume no thermal or other forms of energy loss)</strong></p>
-<p><strong>New Parameters</strong>:</p>
-<ul>
-<li>Landing mass: 17.5 tonnes</li>
-<li>Approach speed: 200 km/h</li>
-<li>Arresting distance: 60m</li>
-<li>Cable stretch: 14m</li>
-<li>Deceleration time: 5s</li>
-<li>$\mu_k = 0.8$</li>
-</ul>
-<p><strong>Calculate</strong>:</p>
-<ol>
-<li>Impulse magnitude</li>
-<li>Cable’s elastic potential energy</li>
-<li>Elasticity coefficient ($k$)</li>
-</ol>
-<hr>
-<h4 id="1-Impulse-magnitude"><strong>1. Impulse magnitude</strong>:</h4>
-<p>$$ \text{Impulse} = \Delta p = m \cdot v_{\text{initial}} = 17500 \ \text{kg} \times 55.56 \ \text{m/s} = \boxed{972300 \ \text{N}\cdot\text{s}} $$</p>
-<h4 id="2-Elastic-potential-energy"><strong>2. Elastic potential energy</strong>:</h4>
-<ul>
-<li><strong>Initial kinetic energy</strong>:<br>
-$$ KE_{\text{initial}} = \frac{1}{2} m v_{\text{initial}}^2 = \frac{1}{2} \times 17500 \ \text{kg} \times (55.56 \ \text{m/s})^2 = 26953125 \ \text{J} $$</li>
-<li><strong>Work done by friction</strong>:<br>
-$$ W_{\text{friction}} = \mu_k \cdot m \cdot g \cdot s_{\text{runway}} = 0.8 \times 17500 \ \text{kg} \times 9.81 \ \text{m/s}^2 \times 60 \ \text{m} = 8240400 \ \text{J} $$</li>
-<li><strong>Energy stored in cable</strong>:<br>
-$$ PE_{\text{elastic}} = KE_{\text{initial}} - W_{\text{friction}} = 26953125 \ \text{J} - 8240400 \ \text{J} = \boxed{18.7 \ \text{MJ}} $$</li>
-</ul>
-<h4 id="3-Elasticity-coefficient-k"><strong>3. Elasticity coefficient ($k$)</strong>:</h4>
-<p>$$ PE_{\text{elastic}} = \frac{1}{2} k x^2 \quad \Rightarrow \quad k = \frac{2 \cdot PE_{\text{elastic}}}{x^2} = \frac{2 \times 18712725 \ \text{J}}{(14 \ \text{m})^2} = \boxed{1.91 \times 10^5 \ \text{N/m}} $$</p>
-<hr>
+<hr />
+<h3 id="question-c-arrested-landing-analysis">Question C: Arrested
+Landing Analysis</h3>
+<p><strong>During landing, the J-35 fired all its missiles so that its
+remaining mass is 17.5 tons. It engaged the arresting cable at a speed
+of 200 km/h. The coefficient of kinetic friction between the tires and
+the deck is 0.8. After 5 seconds the aircraft comes to a complete stop,
+having used 60 meters of the landing runway. During this process the
+aircraft pulled an arresting cable which was stretched by 14 meters.
+Calculate the magnitude of the impulse applied on the J-35 during
+deceleration. The elastic potential energy stored in the arresting cable
+and the elasticity coefficient of the arresting cable. (Assume no
+thermal or other forms of energy loss)</strong></p>
+<p><strong>New Parameters</strong>:<br />
+- Landing mass: 17.5 tonnes<br />
+- Approach speed: 200 km/h<br />
+- Arresting distance: 60m - Cable stretch: 14m - Deceleration time:
+5s<br />
+- <span class="math inline">\(\mu_k = 0.8\)</span></p>
+<p><strong>Calculate</strong>:<br />
+1. Impulse magnitude<br />
+2. Cable's elastic potential energy<br />
+3. Elasticity coefficient (<span class="math inline">\(k\)</span>)</p>
+<hr />
+<h4 id="impulse-magnitude"><strong>1. Impulse magnitude</strong>:</h4>
+<p><span class="math display">\[ \text{Impulse} = \Delta p = m \cdot
+v_{\text{initial}} = 17500 \ \text{kg} \times 55.56 \ \text{m/s} =
+\boxed{972300 \ \text{N}\cdot\text{s}} \]</span> #### <strong>2. Elastic
+potential energy</strong>:<br />
+- <strong>Initial kinetic energy</strong>:<br />
+<span class="math display">\[ KE_{\text{initial}} = \frac{1}{2} m
+v_{\text{initial}}^2 = \frac{1}{2} \times 17500 \ \text{kg} \times
+(55.56 \ \text{m/s})^2 = 26953125 \ \text{J} \]</span> - <strong>Work
+done by friction</strong>:<br />
+<span class="math display">\[ W_{\text{friction}} = \mu_k \cdot m \cdot
+g \cdot s_{\text{runway}} = 0.8 \times 17500 \ \text{kg} \times 9.81 \
+\text{m/s}^2 \times 60 \ \text{m} = 8240400 \ \text{J} \]</span> -
+<strong>Energy stored in cable</strong>:<br />
+<span class="math display">\[ PE_{\text{elastic}} = KE_{\text{initial}}
+- W_{\text{friction}} = 26953125 \ \text{J} - 8240400 \ \text{J} =
+\boxed{18.7 \ \text{MJ}} \]</span></p>
+<h4 id="elasticity-coefficient-k"><strong>3. Elasticity coefficient
+(<span class="math inline">\(k\)</span>)</strong>:</h4>
+<p><span class="math display">\[ PE_{\text{elastic}} = \frac{1}{2} k x^2
+\quad \Rightarrow \quad k = \frac{2 \cdot PE_{\text{elastic}}}{x^2} =
+\frac{2 \times 18712725 \ \text{J}}{(14 \ \text{m})^2} = \boxed{1.91
+\times 10^5 \ \text{N/m}} \]</span></p>
+<hr />
 <blockquote>
-<p><em>“Capacitor bank critical at 107%!”</em><br>
-The engineering console flashes thermal warnings as missile tracks converge. Zhang’s fingers fly across haptic controls—balancing energy equations against survival odds.</p>
+<p><em>"Capacitor bank critical at 107%!"</em><br />
+The engineering console flashes thermal warnings as missile tracks
+converge. Zhang's fingers fly across haptic controls—balancing energy
+equations against survival odds.</p>
 </blockquote>
-<hr>
-<h1>Reasoning</h1>
+<hr />
+<h1 id="reasoning">Reasoning</h1>
 
       </section>
 
@@ -748,6 +874,26 @@ The engineering console flashes thermal warnings as missile tracks converge. Zha
 
   
   
+
+
+
+ 
+<!-- mathjax -->
+
+
+<script>
+MathJax = {
+    tex: {
+    inlineMath: 
+    [
+    
+        ['\\(','\\)'],
+    
+    ]
+    }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 
 
