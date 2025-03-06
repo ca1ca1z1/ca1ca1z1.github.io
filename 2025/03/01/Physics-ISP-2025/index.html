@@ -120,7 +120,7 @@
           
             <h2 class="last-time">
               <span>最后更新于</span>
-              <time  class="article-updated" datetime="2025-03-05T22:46:47.780Z" itemprop="dateUpdated">2025-03-05</time>
+              <time  class="article-updated" datetime="2025-03-06T10:29:12.832Z" itemprop="dateUpdated">2025-03-06</time>
             </h2>
           
           
@@ -179,8 +179,9 @@ carrier. The J-35 (carrier-based aircraft) lands at a speed of 260 km/h
 northward relative to the wind. The landing weight of the J-35 is 17.5
 tons, and the effective landing distance on the deck runway is 100
 meters. The coefficient of kinetic friction between the tires and the
-deck runway is 0.8. (Neglecting air resistance, $ g = 9.81 m⁄s^2 [down]
-$)</strong></p>
+deck runway is 0.8. (Neglecting air resistance,</strong> <span
+class="math inline">\(g = 9.81 \ \text{m/s}^2 \ \text{[down]}\)</span>
+<strong>)</strong></p>
 <p><strong>Information Extraction:</strong><br />
 - <strong>Carrier velocity</strong>: 40 km/h northbound<br />
 - <strong>Wind velocity</strong>: 20 m/s southward (relative to the
@@ -207,28 +208,31 @@ and braking force provided by the arresting cables.</strong></p>
 1. Average acceleration<br />
 2. Braking force provided by friction<br />
 3. Braking force provided by the arresting cables</p>
-<h4 id="average-acceleration"><strong>1. Average
-Acceleration</strong></h4>
+<hr />
 <p><strong>Given:</strong><br />
 - Carrier velocity: <span class="math inline">\(40 \ \text{km/h} = 11.11
-\ \text{m/s (north)}\)</span><br />
+\ \text{m/s [North]}\)</span><br />
 - Wind velocity: <span class="math inline">\(20 \ \text{m/s (south
 relative to carrier)}\)</span><br />
 - J-35 speed relative to wind: <span class="math inline">\(260 \
-\text{km/h} = 72.22 \ \text{m/s (north)}\)</span><br />
+\text{km/h} = 72.22 \ \text{m/s [North]}\)</span><br />
 - <strong>J-35 speed relative to carrier</strong>: <span
 class="math display">\[ v_{\text{J-35/carrier}} = v_{\text{J-35/wind}} +
 v_{\text{wind/carrier}} = 72.22 \ \text{m/s} - 20 \ \text{m/s} = 52.22 \
 \text{m/s [North]} \]</span></p>
-<h2 id="average-acceleration-1"><strong>1. Average
-Acceleration</strong></h2>
+<hr />
+<h4 id="free-body-diagram-of-j-35-in-chapter-1">Free Body Diagram of
+J-35 in Chapter 1</h4>
+<p><img src="/images/posts/Physics_ISP_2025/D1.png" /></p>
+<h4 id="average-acceleration"><strong>1. Average
+Acceleration</strong></h4>
 <p><strong>Formula</strong>:<br />
 <span class="math display">\[ v^2 = u^2 + 2as \quad \Rightarrow \quad a
 = \frac{v^2 - u^2}{2s} \]</span></p>
 <p><strong>Calculation</strong>:<br />
 <span class="math display">\[
 a = \frac{0^2 - (52.22)^2}{2 \times 100} = \frac{-2726.3}{200} =
-\boxed{-13.63 \, \text{m/s}^2 \, \text{(North)}}
+\boxed{-13.63 \, \text{m/s}^2 \, \text{[North]}}
 \]</span></p>
 <hr />
 <h4 id="braking-force-from-friction"><strong>2. Braking Force from
@@ -237,8 +241,8 @@ Friction</strong></h4>
 <span class="math display">\[ F_{\text{friction}} = \mu \cdot m \cdot g
 \]</span> <strong>Calculating Friction Force</strong>:<br />
 <span class="math display">\[ F_{\text{friction}} = 0.8 \times 17500 \
-\text{kg} \times 9.81 \ \text{m/s}^2 = \boxed{137340 \ \text{N}}
-\]</span></p>
+\text{kg} \times 9.81 \ \text{m/s}^2 = \boxed{137340 \ \text{N} \
+\text{[South]}} \]</span></p>
 <hr />
 <h4 id="braking-force-from-arresting-cables"><strong>3. Braking Force
 from Arresting Cables</strong></h4>
@@ -248,7 +252,7 @@ from Arresting Cables</strong></h4>
 <strong>Calculating Force from Cables</strong>:<br />
 <span class="math display">\[ F_{\text{cables}} = F_{\text{total}} -
 F_{\text{friction}} = 238525 \ \text{N} - 137340 \ \text{N} =
-\boxed{101185 \ \text{N}} \]</span></p>
+\boxed{101185 \ \text{N} \ \text{[South]}} \]</span></p>
 <hr />
 <blockquote>
 <p>Rain suddenly sheets across the flight deck. The tactical screen
@@ -270,6 +274,7 @@ deck)<br />
 <p><strong>Task</strong>:<br />
 Determine minimum number of arresting cables required for safe stop
 within 100m.</p>
+<hr />
 <h4 id="reduced-friction-force"><strong>1. Reduced Friction
 Force</strong></h4>
 <p><strong>New friction coefficient</strong>: <span
@@ -317,7 +322,8 @@ id="chapter-2-the-physics-string-of-the-electromagnetic-longbow">Chapter
 System (EMALS) converts electrical energy into kinetic energy to rapidly
 launch carrier-based aircraft. During takeoff, the J-35’s weight
 increases to 24 tons due to mounted missiles and weapons. (Neglecting
-air resistance, $ g=9.81 m⁄s^2 [down] $)</strong></p>
+air resistance,</strong> <span class="math inline">\(g = 9.81 \
+\text{m/s}^2 \ \text{[down]}\)</span> <strong>)</strong></p>
 <p><strong>Information Extraction:</strong><br />
 - <strong>J-35 takeoff mass</strong>: 24 tonnes<br />
 - <strong>Gravitational acceleration</strong>: <span
@@ -338,6 +344,7 @@ and the takeoff runway, calculate the minimum energy the EMALS must
 provide.</strong></p>
 <p><strong>Required</strong>:<br />
 - Minimum energy provided by EMALS</p>
+<hr />
 <h4 id="calculate-kinetic-energy-ke"><strong>1. Calculate kinetic energy
 (KE)</strong></h4>
 <p><strong>Given</strong>:<br />
@@ -393,6 +400,9 @@ provide.</strong></p>
 2. Magintude of work done by gravity<br />
 3. Minimum energy required</p>
 <hr />
+<h4 id="free-body-diagram-of-j-35-in-chapter-2">Free Body Diagram of
+J-35 in Chapter 2</h4>
+<p><img src="/images/posts/Physics_ISP_2025/D2.png" /></p>
 <h4 id="work-done-by-friction"><strong>1. Work done by
 friction</strong>:</h4>
 <ul>
