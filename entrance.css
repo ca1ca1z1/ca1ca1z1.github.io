@@ -1,0 +1,15 @@
+.entrance[hidden]{display:none}
+.entrance{position:fixed;inset:0;z-index:1000;background:#101010;color:#f5f5ef;overflow:hidden;opacity:1;transition:opacity .65s ease;isolation:isolate}
+.entrance-canvas{display:block;width:100%;height:100%}
+.entrance-skip{position:absolute;bottom:max(28px,env(safe-area-inset-bottom));right:clamp(22px,4vw,64px);background:transparent;border:1px solid #555;color:#eee;padding:12px 16px;font:11px "Courier New",monospace;letter-spacing:.05em;cursor:pointer}
+.entrance-skip span{margin-left:24px;color:#a8a8a8}
+.entrance-skip:hover{border-color:#eee;background:#242424}
+.entrance-skip:focus-visible{outline:2px solid #a9ff80;outline-offset:5px}
+.entrance-description{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+body.is-entering{overflow:hidden}
+body.is-entering>.shell{opacity:0;transform:translateY(18px)}
+body>.shell{transition:opacity .75s ease,transform .75s cubic-bezier(.2,.7,.2,1)}
+.entrance.is-leaving{opacity:0;pointer-events:none}
+.entrance-replay{background:none;border:0;border-bottom:1px solid #aeb4a8;color:inherit;padding:0 0 4px;cursor:pointer;font:inherit;letter-spacing:inherit}
+@media(max-width:640px){.entrance-skip{font-size:10px;padding:11px 12px}.entrance-skip span{margin-left:12px}}
+@media(prefers-reduced-motion:reduce){.entrance,body>.shell{transition:none!important}body.is-entering>.shell{opacity:1;transform:none}}

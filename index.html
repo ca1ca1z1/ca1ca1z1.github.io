@@ -6,17 +6,25 @@
   <meta name="description" content="CAICAIZI 的个人作品集。新的作品与成果展示空间，正在构建。">
   <title>CAICAIZI · 个人作品集</title>
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./entrance.css">
+  <script src="./entrance.js" defer></script>
 </head>
 <body>
-  <a class="skip" href="#main">跳到正文</a>
+  <section class="entrance" hidden aria-label="作品集开场动画">
+    <canvas class="entrance-canvas" aria-hidden="true"></canvas>
+    <button class="entrance-skip" type="button">跳过动画 <span>ESC ↗</span></button>
+    <p class="entrance-description">CAICAIZI · 欢迎来到我的作品集</p>
+  </section>
   <div class="shell">
+    <a class="skip" href="#main">跳到正文</a>
     <header><a class="brand" href="./">CAICAIZI<span> / PORTFOLIO</span></a><a class="external" href="https://github.com/ca1ca1z1">GitHub ↗</a></header>
     <main id="main">
       <p class="eyebrow"><span class="dot" aria-hidden="true"></span> A NEW CHAPTER · 新的起点</p>
       <h1>从想法，<br>到<span class="accent">作品。</span></h1>
       <div class="intro"><span class="rule" aria-hidden="true"></span><div><h2>新的作品集，正在构建。</h2><p>这里将展示我的项目、实践与成果。<br>内容正在整理，期待与你分享。</p><a class="button" href="https://github.com/ca1ca1z1">访问我的 GitHub <span aria-hidden="true">↗</span></a></div></div>
     </main>
-    <footer><span>© 2026 CAICAIZI</span><span>持续探索，持续创造。</span></footer>
+    <footer><span>© 2026 CAICAIZI</span><button class="entrance-replay" type="button" hidden>↻ 重播开场</button><span>持续探索，持续创造。</span></footer>
   </div>
 </body>
 </html>
+
