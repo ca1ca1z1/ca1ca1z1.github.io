@@ -35,18 +35,18 @@
     elapsed=(now-start)/1000;
     try {draw(elapsed);if(elapsed*1000>=scene.durationMs)finish();else raf=requestAnimationFrame(frame);}catch {finish(true);}
   }
-  function begin(manual=false) {
+  function begin() {
     if(running)return;
     clearTimeout(exitTimer);
-    if(reduce.matches && !manual)return;
     lastFocus=document.activeElement;resize();overlay.hidden=false;overlay.classList.remove('is-leaving');
     shell.inert=true;document.body.classList.add('is-entering');running=true;elapsed=0;
     scrollTo({top:0,behavior:'instant'});draw(0);start=performance.now();
     overlay.focus({preventScroll:true});raf=requestAnimationFrame(frame);watchdog=setTimeout(()=>finish(true),scene.durationMs + 3000);
   }
-  replay.addEventListener('click',()=>begin(true));
+  replay.addEventListener('click',begin);
   addEventListener('resize',()=>{if(running){resize();draw(elapsed);}});
-  reduce.addEventListener('change',()=>{if(reduce.matches)finish(true);});
+  // Back/forward cache restores do not execute deferred scripts again.
+  addEventListener('pageshow',event=>{if(event.persisted){finish(true);begin();}});
   replay.hidden=false;
   begin();
 })();

@@ -24,7 +24,14 @@ for(const size of [[1280,800],[390,844],[844,390]]){
   for(const v of [...t.timers.values()])if(v.ms===680)v.f();assert(t.overlay.hidden);
   t.replay.events.click();assert(t.shell.inert);assert(!t.events.keydown);t.frame(scene.durationMs+1);assert(!t.shell.inert);
 }
-const r=setup(true);assert(r.overlay.hidden&&!r.shell.inert);r.replay.events.click();assert(r.shell.inert);r.media.change();assert(!r.shell.inert&&r.overlay.hidden);
+// Every fresh document (including reload) starts even with reduced motion set.
+for(const reduced of [false,true])for(let load=0;load<2;load++){
+  const r=setup(reduced);assert(!r.overlay.hidden&&r.shell.inert);
+  r.frame(scene.durationMs+1);assert(!r.shell.inert);
+  r.events.pageshow({persisted:true});assert(!r.overlay.hidden&&r.shell.inert);
+  r.frame(scene.durationMs+1);assert(!r.shell.inert);
+  r.replay.events.click();assert(r.shell.inert);
+}
 const w=setup();[...w.timers.values()].find(t=>t.ms===scene.durationMs+3000).f();assert(w.overlay.hidden&&!w.shell.inert);
 // Boundary assertions are based on the requested choreography, not render calls.
 const state=scene.stateAt,cell=(f,r,c)=>state(f).cells.find(x=>x.r===r&&x.c===c).reveal;
