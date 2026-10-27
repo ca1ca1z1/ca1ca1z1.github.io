@@ -8,40 +8,70 @@
   <style>
     :root { color-scheme: dark; background: #000; color: #bdbdbd; }
     * { box-sizing: border-box; }
-    body { margin: 0; }
+    body { margin: 0; overflow: hidden; }
     main { min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 20px; }
     h1 { margin: 0; font: 600 clamp(12px, 1vw, 20px)/1.5 Arial, Helvetica, sans-serif; text-align: center; }
-    #sentence { display: inline-block; white-space: nowrap; }
+    .line { position: relative; display: inline-block; white-space: nowrap; }
+    #sentence { position: relative; z-index: 1; }
+    #flash, #halo { position: absolute; pointer-events: none; opacity: 0; }
+    #flash { inset: 0; z-index: 2; color: #fff; }
+    #flash span { text-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 12px #cdd7ff, 0 0 24px #9daee9; }
+    #flash .hot { text-shadow: -2px 0 2px #fff, 2px 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff, 0 0 5px #fff, 0 0 9px #fff, 0 0 17px #e5eaff, 0 0 32px #bdcaff, 0 0 55px #879edc; }
+    #halo { inset: -65px -50px; filter: blur(12px); mix-blend-mode: screen; }
   </style>
 </head>
 <body>
   <main>
-    <h1 aria-label="There's nothing here, not even remains."><span id="sentence" aria-hidden="true">There's nothing here, not even remains.</span></h1>
+    <h1 aria-label="There's nothing here, not even remains."><span class="line" aria-hidden="true"><span id="sentence">There's nothing here, not even remains.</span><span id="halo"></span><span id="flash"></span></span></h1>
   </main>
   <script>
     (() => {
       const sentence = document.querySelector('#sentence');
+      const flash = document.querySelector('#flash');
+      const halo = document.querySelector('#halo');
       // Punctuation gets its own beat, without inserting a space before it.
       const tokens = ["There's", ' nothing', ' here', ',', ' not', ' even', ' remains', '.'];
-      const gaps = [460, 460, 320, 650, 420, 460, 360];
-      let timer, glow, index;
+      // Each delay belongs to the incoming token: long words take longer,
+      // punctuation lands quickly, and the phrase after the comma gets a pause.
+      const delays = [350, 640, 370, 90, 440, 360, 670, 80];
+      let timer, index, animations = [];
+      function illuminate() {
+        animations.forEach(animation => animation.cancel());
+        flash.replaceChildren();
+        const chars = Array.from(sentence.textContent);
+        const middle = Math.floor(chars.length * (.3 + Math.random() * .4));
+        chars.forEach((char, i) => {
+          const span = document.createElement('span');
+          span.textContent = char;
+          if (i < 2 || i >= chars.length - 2 || Math.abs(i - middle) <= 1 || Math.random() < .1) span.className = 'hot';
+          flash.append(span);
+        });
+        const spot = 30 + Math.random() * 40;
+        halo.style.background = [
+          'radial-gradient(ellipse 65px 35px at 50px 50%, #dce4ffbb, #8295dc55 40%, transparent 100%)',
+          'radial-gradient(ellipse 65px 35px at calc(100% - 50px) 50%, #dce4ffbb, #8295dc55 40%, transparent 100%)',
+          `radial-gradient(ellipse 55px 30px at ${spot}% 50%, #c4d1ff70, #8295dc30 45%, transparent 100%)`,
+          'radial-gradient(ellipse closest-side at center, #758bcc28, transparent 100%)'
+        ].join(',');
+        // Only the additive light layers fade; the base sentence stays visible.
+        if (flash.animate) animations = [
+          flash.animate([{opacity:1}, {opacity:.95, offset:.18}, {opacity:0}], {duration:150, easing:'ease-out'}),
+          halo.animate([{opacity:1}, {opacity:.8, offset:.2}, {opacity:0}], {duration:210, easing:'ease-out'})
+        ];
+      }
       function typeNext() {
         sentence.textContent += tokens[index];
-        if (glow) glow.cancel();
-        // Brighten the whole current sentence; never fade or hide the text.
-        if (sentence.animate) glow = sentence.animate([
-          { color: '#fff', textShadow: '0 0 2px #fff, 0 0 7px #fff, 0 0 15px rgba(255,255,255,.85)' },
-          { color: '#f5f5f5', textShadow: '0 0 2px rgba(255,255,255,.8), 0 0 6px rgba(255,255,255,.5)', offset: .25 },
-          { color: '#bdbdbd', textShadow: '0 0 0 transparent' }
-        ], { duration: 100, easing: 'ease-out' });
-        if (++index < tokens.length) timer = setTimeout(typeNext, gaps[index - 1]);
+        illuminate();
+        if (++index < tokens.length) timer = setTimeout(typeNext, delays[index]);
       }
       function start() {
         clearTimeout(timer);
-        if (glow) glow.cancel();
+        animations.forEach(animation => animation.cancel());
+        animations = [];
+        flash.replaceChildren();
         sentence.textContent = '';
         index = 0;
-        timer = setTimeout(typeNext, 350);
+        timer = setTimeout(typeNext, delays[0]);
       }
       start();
       window.addEventListener('pageshow', event => { if (event.persisted) start(); });
