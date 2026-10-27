@@ -54,11 +54,11 @@ assert(state(60.25).fan[4].height>0&&state(60.25).fan[3].height===0);
 assert(!state(65).guides&&state(65.5).guides&&!state(66).guides);
 assert(!state(66).checks&&state(66.5).checks&&!state(67).checks);
 assert(state(66).fan[4].height===0&&state(68).fan.every(c=>c.height===0));
-assert(state(77.99).welcome==='white'&&state(78).welcome==='inverse'&&state(79).welcome==='white'&&state(80).welcome==='green'&&state(81).welcome==='none');
+assert(state(77.99).welcome==='white'&&state(78).welcome==='inverse'&&state(78.49).welcome==='inverse'&&state(78.5).welcome==='white'&&state(78.99).welcome==='white'&&state(79).welcome==='green'&&state(79.49).welcome==='green'&&state(79.5).welcome==='none');
 assert(state(0).progress===0&&state(20).progress>.3);
 for(const f of [36,38,41.99])assert(state(f).progress===.6);
 for(const f of [63,66,68.99])assert(state(f).progress===.9);
-assert(state(78).progress===1&&state(80.99).progress===1);
+assert(state(78).progress===1&&state(79.49).progress===1);
 for(let f=.25;f<=85;f+=.25)assert(state(f).progress>=state(f-.25).progress);
 function welcomeBackground(beat){
   const rectangles=[];
@@ -66,7 +66,7 @@ function welcomeBackground(beat){
   scene.render(ctx,1280,800,beat);
   return rectangles.find(r=>r.box[1]===-9&&r.box[3]===18);
 }
-const white=welcomeBackground(78),green=welcomeBackground(80);
+const white=welcomeBackground(78),green=welcomeBackground(79);
 assert.deepStrictEqual(white.box,green.box);assert(white.color!==green.color);
 assert(!source.includes('entrance-replay'));
 console.log('PASS: all stages at desktop/mobile/landscape; completion; automatic playback; reduced motion; timeout recovery; nonlinear progress with 60/90 holds and visible 100.');

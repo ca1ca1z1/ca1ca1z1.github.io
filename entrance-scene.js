@@ -12,7 +12,7 @@
     passwordFull:42, flash:43, passwordGone:45, roll:43, blue:44,
     circles:48, clearBlue:52, green:55, clearGeometry:57, allGreen:59,
     fan:60, fanPeak:63, noGuides:65, noChecks:66, fanEnd:68,
-    inverse:78, normal:79, greenFlash:80, clear:81, end:82.5});
+    inverse:78, normal:78.5, greenFlash:79, clear:79.5, end:81});
   const WHITE='#f3f3ed', BLACK='#101010', BLUE='#182bff', GREEN='#a3ff77';
   const CELL=31, SIZE=CELL*5, HALF=SIZE/2;
   const clamp=x=>Math.max(0,Math.min(1,x));
