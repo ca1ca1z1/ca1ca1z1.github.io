@@ -17,6 +17,14 @@
   const CELL=31, SIZE=CELL*5, HALF=SIZE/2;
   const clamp=x=>Math.max(0,Math.min(1,x));
   const out=x=>1-Math.pow(1-clamp(x),3);
+  function progressAt(f) {
+    if(f<40)return .6*out(f/40);
+    if(f<46)return .6;
+    if(f<67)return .6+.3*out((f-46)/21);
+    if(f<73)return .9;
+    if(f<82)return .9+.1*out((f-73)/9);
+    return 1;
+  }
   const QUADS=[{c:0,r:3,label:'COM'},{c:3,r:3,label:'AUT'},
     {c:0,r:0,label:'VER'},{c:3,r:0,label:'SUB'}];
   const CHECKS=['CHECK 23','CHECK 4','CHECK 8','CHECK 11','LOGS 5'];
@@ -55,7 +63,7 @@
       guides:f>=T.clearBlue&&f<T.noGuides,
       guideProgress:out((f-T.clearBlue)/(T.allGreen-T.clearBlue)),
       welcome:f<T.fanPeak||f>=T.clear?'none':f<T.inverse?'white':f<T.normal?'inverse':f<T.greenFlash?'white':'green',
-      progress:clamp(f/T.clear)};
+      progress:progressAt(f)};
   }
   function render(ctx,width,height,f) {
     const s=stateAt(f);
@@ -68,7 +76,7 @@
     ctx.globalAlpha=1;rect(0,0,width,height,BLACK);
     if(f>=T.clear)return; // Pure background, including removal of the HUD.
     const margin=width<600?24:48;
-    text('CA / PERSONAL ARCHIVE',margin,32,9,'#777','left');
+    text('CAI / PERSONAL ARCHIVE',margin,32,9,'#777','left');
     text('INTRO SEQUENCE',width-margin,32,9,'#777','right');
     // Existing progress-bar dimensions, labels and fill style are unchanged.
     const count=28,unit=Math.min(10,(width-80)/count),x=width/2-count*unit/2;

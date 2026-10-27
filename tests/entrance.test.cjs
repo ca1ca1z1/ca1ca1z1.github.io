@@ -7,7 +7,7 @@ function setup(reduced=false,width=1280,height=800){
   const document={activeElement:null,addEventListener:(k,f)=>events[k]=f};
   const el=()=>({hidden:false,inert:false,classList:classes(),events:{},addEventListener(k,f){this.events[k]=f},focus(){document.activeElement=this}});
   const overlay=el(),shell=el(),skip=el(),replay=el(),body=el();overlay.hidden=true;document.body=body;document.activeElement=body;
-  overlay.contains=x=>x===skip;
+  overlay.contains=x=>x===overlay;
   let draws=0;
   const ctx=new Proxy({measureText:s=>({width:s.length*5})},{get:(o,k)=>o[k]||(()=>{draws++}),set:(o,k,v)=>(o[k]=v,true)});
   const canvas={getContext:()=>ctx};
@@ -22,8 +22,7 @@ for(const size of [[1280,800],[390,844],[844,390]]){
   for(let beat=0;beat<86;beat+=.25)t.frame(beat*scene.BEAT_MS);
   assert(t.draws()>100);assert(t.shell.inert);t.frame(scene.durationMs+1);assert(!t.shell.inert);assert(!t.body.classList.contains('is-entering'));
   for(const v of [...t.timers.values()])if(v.ms===680)v.f();assert(t.overlay.hidden);
-  t.replay.events.click();assert(t.shell.inert);t.events.keydown({key:'Escape'});assert(!t.shell.inert);
-  t.replay.events.click();t.skip.events.click();assert(!t.shell.inert);
+  t.replay.events.click();assert(t.shell.inert);assert(!t.events.keydown);t.frame(scene.durationMs+1);assert(!t.shell.inert);
 }
 const r=setup(true);assert(r.overlay.hidden&&!r.shell.inert);r.replay.events.click();assert(r.shell.inert);r.media.change();assert(!r.shell.inert&&r.overlay.hidden);
 const w=setup();[...w.timers.values()].find(t=>t.ms===scene.durationMs+3000).f();assert(w.overlay.hidden&&!w.shell.inert);
@@ -47,5 +46,10 @@ assert(state(67).railErase===1&&state(67).fan[4].height===155);
 assert(state(64.25).fan[4].height>0&&state(64.25).fan[3].height===0);
 assert(!state(69).guides&&state(70).fan[4].height===0&&state(72).fan.every(c=>c.height===0));
 assert(state(81.99).welcome==='white'&&state(82).welcome==='inverse'&&state(83).welcome==='white'&&state(84).welcome==='green'&&state(85).welcome==='none');
-console.log('PASS: all stages at desktop/mobile/landscape; completion; Escape; skip; replay; reduced motion; timeout recovery.');
+assert(state(0).progress===0&&state(20).progress>.3);
+for(const f of [40,42,45.99])assert(state(f).progress===.6);
+for(const f of [67,70,72.99])assert(state(f).progress===.9);
+assert(state(82).progress===1&&state(84.99).progress===1);
+for(let f=.25;f<=85;f+=.25)assert(state(f).progress>=state(f-.25).progress);
+console.log('PASS: all stages at desktop/mobile/landscape; completion; replay; reduced motion; timeout recovery; nonlinear progress with 60/90 holds and visible 100.');
 console.log('PASS: corner wave; atomic tile removal; text order; password pauses and flashes; rolling masks; GREEN timing; staggered columns; ending beats.');

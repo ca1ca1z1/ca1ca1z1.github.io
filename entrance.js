@@ -5,7 +5,6 @@
   const overlay = document.querySelector('.entrance');
   const canvas = document.querySelector('.entrance-canvas');
   const shell = document.querySelector('.shell');
-  const skip = document.querySelector('.entrance-skip');
   const replay = document.querySelector('.entrance-replay');
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -43,10 +42,9 @@
     lastFocus=document.activeElement;resize();overlay.hidden=false;overlay.classList.remove('is-leaving');
     shell.inert=true;document.body.classList.add('is-entering');running=true;elapsed=0;
     scrollTo({top:0,behavior:'instant'});draw(0);start=performance.now();
-    skip.focus({preventScroll:true});raf=requestAnimationFrame(frame);watchdog=setTimeout(()=>finish(true),scene.durationMs + 3000);
+    overlay.focus({preventScroll:true});raf=requestAnimationFrame(frame);watchdog=setTimeout(()=>finish(true),scene.durationMs + 3000);
   }
-  skip.addEventListener('click',()=>finish());replay.addEventListener('click',()=>begin(true));
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&running)finish();});
+  replay.addEventListener('click',()=>begin(true));
   addEventListener('resize',()=>{if(running){resize();draw(elapsed);}});
   reduce.addEventListener('change',()=>{if(reduce.matches)finish(true);});
   replay.hidden=false;
