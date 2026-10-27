@@ -15,9 +15,9 @@
     #sentence { position: relative; z-index: 1; }
     #flash, #halo { position: absolute; pointer-events: none; opacity: 0; }
     #flash { inset: 0; z-index: 2; color: #fff; }
-    #flash span { text-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 12px #cdd7ff, 0 0 24px #9daee9; }
-    #flash .hot { text-shadow: -2px 0 2px #fff, 2px 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff, 0 0 5px #fff, 0 0 9px #fff, 0 0 17px #e5eaff, 0 0 32px #bdcaff, 0 0 55px #879edc; }
-    #halo { inset: -65px -50px; filter: blur(12px); mix-blend-mode: screen; }
+    #flash span { text-shadow: 0 0 2px #fff, 0 0 4px #fff, 0 0 8px #fff, 0 0 18px #e7edff, 0 0 36px #b8caff; }
+    #flash .hot { text-shadow: -3px 0 2px #fff, 3px 0 2px #fff, 0 -2px 2px #fff, 0 2px 2px #fff, 0 0 3px #fff, 0 0 6px #fff, 0 0 10px #fff, 0 0 18px #fff, 0 0 30px #eaf0ff, 0 0 55px #cfddff, 0 0 90px #a6bdff; }
+    #halo { inset: -105px -85px; filter: blur(10px) brightness(1.6); mix-blend-mode: screen; }
   </style>
 </head>
 <body>
@@ -48,15 +48,15 @@
         });
         const spot = 30 + Math.random() * 40;
         halo.style.background = [
-          'radial-gradient(ellipse 65px 35px at 50px 50%, #dce4ffbb, #8295dc55 40%, transparent 100%)',
-          'radial-gradient(ellipse 65px 35px at calc(100% - 50px) 50%, #dce4ffbb, #8295dc55 40%, transparent 100%)',
-          `radial-gradient(ellipse 55px 30px at ${spot}% 50%, #c4d1ff70, #8295dc30 45%, transparent 100%)`,
-          'radial-gradient(ellipse closest-side at center, #758bcc28, transparent 100%)'
+          'radial-gradient(ellipse 100px 65px at 85px 50%, #fff 0%, #e9efffdd 12%, #a9bdff99 38%, #8295dc30 65%, transparent 100%)',
+          'radial-gradient(ellipse 100px 65px at calc(100% - 85px) 50%, #fff 0%, #e9efffdd 12%, #a9bdff99 38%, #8295dc30 65%, transparent 100%)',
+          `radial-gradient(ellipse 85px 55px at ${spot}% 50%, #fff 0%, #e5ecffbb 15%, #a9bdff70 40%, transparent 100%)`,
+          'radial-gradient(ellipse closest-side at center, #b5c7ff66, #859de62b 55%, transparent 100%)'
         ].join(',');
         // Only the additive light layers fade; the base sentence stays visible.
         if (flash.animate) animations = [
-          flash.animate([{opacity:1}, {opacity:.95, offset:.18}, {opacity:0}], {duration:150, easing:'ease-out'}),
-          halo.animate([{opacity:1}, {opacity:.8, offset:.2}, {opacity:0}], {duration:210, easing:'ease-out'})
+          flash.animate([{opacity:1, filter:'brightness(2)'}, {opacity:1, filter:'brightness(1.6)', offset:.12}, {opacity:.25, filter:'brightness(1)', offset:.45}, {opacity:0, filter:'brightness(1)'}], {duration:140, easing:'linear'}),
+          halo.animate([{opacity:1}, {opacity:.95, offset:.12}, {opacity:.25, offset:.5}, {opacity:0}], {duration:240, easing:'ease-out'})
         ];
       }
       function typeNext() {
