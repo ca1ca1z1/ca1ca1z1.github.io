@@ -8,7 +8,8 @@
 ## 文件
 - index.html：首页文字和结构。
 - style.css：颜色、字体、响应式布局。
-- entrance.js：约 8.2 秒的 Canvas 开场，含图形编排、跳过与重播逻辑。
+- entrance-scene.js：Canvas 逐拍时间轴与绘制；一拍为 140 毫秒，全程约 12.1 秒。
+- entrance.js：开场播放、跳过、重播、减少动态效果及超时恢复。
 - entrance.css：开场遮罩与首页过渡样式。
 - 404.html：失效链接的提示页。
 - .nojekyll：让 GitHub Pages 直接提供静态文件。
@@ -35,7 +36,10 @@
 进入首页自动播放；右下角按钮或 Esc 可跳过，页脚可重播。
 开启系统“减少动态效果”时不自动播放，但仍可主动点击重播。
 浏览器不支持 Canvas 或 JavaScript 时直接展示主页。开场不使用视频、音频或外部依赖。
-动画使用参考视频的黑白网格、蓝白几何、扇形与线框视觉语言，标识替换为 CAICAIZI。
+动画顺序：键入 CAICAIZI / PERSONAL PORTFOLIO → 四角向中心逐格展开 → LOGIN / SYSTEM → 滚动权限条 → 密码 → COM/AUT/VER/SUB → 圆形覆盖 → CHECK GREEN → 五列伸缩 → welcome! □□ → 反色与绿底 → 纯色收尾。
+一“帧”按中间行方块移动一次定义，并非显示器刷新帧。调整 entrance-scene.js 的 BEAT_MS 可统一改变速度；T 中各阶段以拍计时，支持半拍。进度条随总时长同步。
+时序与交互检查：在项目目录运行 `node tests/entrance.test.cjs`，无需安装依赖。
+不再包含六边形线框或旧 CA 图标。开场结束后进入原作品集首页。
 
 ## 后续创作
 先整理真实项目材料（目标、个人职责、过程、成果、截图与链接），再设计正式作品集。
