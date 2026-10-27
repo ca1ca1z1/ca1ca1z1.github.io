@@ -33,7 +33,7 @@
       const tokens = ["There's", ' nothing', ' here', ',', ' not', ' even', ' remains', '.'];
       // Each delay belongs to the incoming token: long words take longer,
       // punctuation lands quickly, and the phrase after the comma gets a pause.
-      const delays = [350, 640, 370, 90, 440, 360, 670, 80];
+      const delays = [700, 1280, 740, 180, 880, 720, 1340, 160];
       let timer, index, animations = [];
       function illuminate() {
         animations.forEach(animation => animation.cancel());
