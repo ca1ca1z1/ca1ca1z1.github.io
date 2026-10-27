@@ -7,5 +7,4 @@ body.is-entering{overflow:hidden}
 body.is-entering>.shell{opacity:0;transform:translateY(18px)}
 body>.shell{transition:opacity .75s ease,transform .75s cubic-bezier(.2,.7,.2,1)}
 .entrance.is-leaving{opacity:0;pointer-events:none}
-.entrance-replay{background:none;border:0;border-bottom:1px solid #aeb4a8;color:inherit;padding:0 0 4px;cursor:pointer;font:inherit;letter-spacing:inherit}
 @media(prefers-reduced-motion:reduce){.entrance,body>.shell{transition:none!important}body.is-entering>.shell{opacity:1;transform:none}}

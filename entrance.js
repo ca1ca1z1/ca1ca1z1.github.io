@@ -5,7 +5,7 @@
   const overlay = document.querySelector('.entrance');
   const canvas = document.querySelector('.entrance-canvas');
   const shell = document.querySelector('.shell');
-  const replay = document.querySelector('.entrance-replay');
+  const main = document.querySelector('#main');
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
@@ -26,7 +26,7 @@
     if(!running)return;
     running=false;cancelAnimationFrame(raf);clearTimeout(watchdog);
     shell.inert=false;document.body.classList.remove('is-entering');overlay.classList.add('is-leaving');
-    if(overlay.contains(document.activeElement)) (lastFocus && lastFocus !== document.body ? lastFocus : replay).focus({preventScroll:true});
+    if(overlay.contains(document.activeElement)) (lastFocus && lastFocus !== document.body && lastFocus !== overlay ? lastFocus : main).focus({preventScroll:true});
     const hide=()=>{overlay.hidden=true;overlay.classList.remove('is-leaving');};
     if(immediate||reduce.matches)hide();else exitTimer=setTimeout(hide,680);
   }
@@ -43,10 +43,8 @@
     scrollTo({top:0,behavior:'instant'});draw(0);start=performance.now();
     overlay.focus({preventScroll:true});raf=requestAnimationFrame(frame);watchdog=setTimeout(()=>finish(true),scene.durationMs + 3000);
   }
-  replay.addEventListener('click',begin);
   addEventListener('resize',()=>{if(running){resize();draw(elapsed);}});
   // Back/forward cache restores do not execute deferred scripts again.
   addEventListener('pageshow',event=>{if(event.persisted){finish(true);begin();}});
-  replay.hidden=false;
   begin();
 })();

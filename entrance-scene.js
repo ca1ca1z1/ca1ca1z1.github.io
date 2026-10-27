@@ -1,4 +1,4 @@
-/* One beat is one discrete LOGIN-row shift, not a display refresh frame.
+/* One beat is 140 ms; the LOGIN row now shifts every half beat.
    All choreography is a pure function of elapsed time: seeking, resize and
    low refresh rates cannot accumulate timing errors. */
 (function (root, factory) {
@@ -7,44 +7,44 @@
 })(typeof window !== 'undefined' ? window : this, function () {
   'use strict';
   const BEAT_MS = 140;
-  const T = Object.freeze({grid:15, gridFull:20, corners:20, login:24, top:29,
-    bottom:30.5, systemFull:32, rails:32, railsFull:35, password:40,
-    passwordFull:46, flash:47, passwordGone:49, roll:47, blue:48,
-    circles:52, clearBlue:56, green:59, clearGeometry:61, allGreen:63,
-    fan:64, fanPeak:67, noGuides:69, noChecks:70, fanEnd:72,
-    inverse:82, normal:83, greenFlash:84, clear:85, end:86.5});
+  const T = Object.freeze({grid:15, gridFull:20, corners:20, login:24, top:26.5,
+    bottom:27.25, systemFull:28, rails:28, railsFull:31, password:36,
+    passwordFull:42, flash:43, passwordGone:45, roll:43, blue:44,
+    circles:48, clearBlue:52, green:55, clearGeometry:57, allGreen:59,
+    fan:60, fanPeak:63, noGuides:65, noChecks:66, fanEnd:68,
+    inverse:78, normal:79, greenFlash:80, clear:81, end:82.5});
   const WHITE='#f3f3ed', BLACK='#101010', BLUE='#182bff', GREEN='#a3ff77';
   const CELL=31, SIZE=CELL*5, HALF=SIZE/2;
   const clamp=x=>Math.max(0,Math.min(1,x));
   const out=x=>1-Math.pow(1-clamp(x),3);
   function progressAt(f) {
-    if(f<40)return .6*out(f/40);
-    if(f<46)return .6;
-    if(f<67)return .6+.3*out((f-46)/21);
-    if(f<73)return .9;
-    if(f<82)return .9+.1*out((f-73)/9);
+    if(f<T.password)return .6*out(f/T.password);
+    if(f<T.passwordFull)return .6;
+    if(f<T.fanPeak)return .6+.3*out((f-T.passwordFull)/(T.fanPeak-T.passwordFull));
+    if(f<T.fanPeak+6)return .9;
+    if(f<T.inverse)return .9+.1*out((f-T.fanPeak-6)/(T.inverse-T.fanPeak-6));
     return 1;
   }
   const QUADS=[{c:0,r:3,label:'COM'},{c:3,r:3,label:'AUT'},
     {c:0,r:0,label:'VER'},{c:3,r:0,label:'SUB'}];
   const CHECKS=['CHECK 23','CHECK 4','CHECK 8','CHECK 11','LOGS 5'];
-  const PASSWORD_AT=[40,41.25,43.5,44.75,46];
-  const CORNERS=[{c:0,r:0,char:'C',on:20,off:26.5},
-    {c:4,r:0,char:'A',on:20.75,off:28},
+  const PASSWORD_AT=[36,37.25,39.5,40.75,42];
+  const CORNERS=[{c:0,r:0,char:'C',on:20,off:25.25},
+    {c:4,r:0,char:'A',on:20.75,off:26},
     {c:0,r:4,char:'0',on:21.5,off:24},
-    {c:4,r:4,char:'1',on:22.25,off:25}];
+    {c:4,r:4,char:'1',on:22.25,off:24.5}];
   function stateAt(f) {
     const cells=[];
     for(let r=0;r<5;r++) for(let c=0;c<5;c++) {
       const ring=Math.min(r,4-r)+Math.min(c,4-c);
       let reveal=out((f-T.grid-ring*.65)/1.6);
-      if(r===2 && f>=T.login+c) reveal=0;
-      if(r===0 && c%2===0 && f>=T.top+(4-c)*.25) reveal=0;
-      if(r===4 && c%2===0 && f>=T.bottom+(4-c)*.25) reveal=0;
+      if(r===2 && f>=T.login+c*.5) reveal=0;
+      if(r===0 && c%2===0 && f>=T.top+(4-c)*.125) reveal=0;
+      if(r===4 && c%2===0 && f>=T.bottom+(4-c)*.125) reveal=0;
       if(f>=T.clearBlue) reveal=0;
       cells.push({r,c,reveal});
     }
-    const rollStep=Math.floor(f-T.roll);
+    const rollStep=Math.floor((f-T.roll)*2);
     // 11011 -> 01101 -> 10110, preserving the stationary LOGIN below.
     const rolling=Array.from({length:5},(_,c)=>((c-rollStep)%3+3)%3!==2);
     const fan=Array.from({length:5},(_,c)=>{
@@ -60,7 +60,8 @@
       railReveal:out((f-T.rails)/3),
       railErase:clamp((f-T.clearGeometry)/(T.fanPeak-T.clearGeometry)),
       greenCount:Math.min(5,Math.max(0,Math.floor(f-T.green)+1)),
-      guides:f>=T.clearBlue&&f<T.noGuides,
+      guides:(f>=T.clearBlue&&f<T.noGuides)||(f>=T.noGuides+.5&&f<T.noGuides+1),
+      checks:(f>=T.circles&&f<T.noChecks)||(f>=T.noChecks+.5&&f<T.noChecks+1),
       guideProgress:out((f-T.clearBlue)/(T.allGreen-T.clearBlue)),
       welcome:f<T.fanPeak||f>=T.clear?'none':f<T.inverse?'white':f<T.normal?'inverse':f<T.greenFlash?'white':'green',
       progress:progressAt(f)};
@@ -163,7 +164,7 @@
       }
     }
     // CHECK rows use deliberate blank-line spacing, matching the reference.
-    if(f>=T.circles&&f<T.noChecks){
+    if(s.checks){
       const rows=[-22,-14,-6,10,24],total=CHECKS.reduce((a,b)=>a+b.length,0);
       let budget=Math.floor(clamp((f-T.circles)/3)*total);
       for(let i=0;i<5;i++){
@@ -183,9 +184,9 @@
     // Welcome is behind the columns, becoming exposed as each column retracts.
     if(s.welcome!=='none'){
       const message='welcome! □□';ctx.font='500 12px "Courier New", monospace';
-      const w=ctx.measureText(message).width+12;
+      const w=ctx.measureText(message).width+26;
       if(s.welcome==='inverse')rect(-w/2,-9,w,18);
-      if(s.welcome==='green')rect(-w/2-7,-9,w+14,18,GREEN);
+      if(s.welcome==='green')rect(-w/2,-9,w,18,GREEN);
       else text(message,0,0,12,s.welcome==='inverse'?BLACK:WHITE);
     }
     for(const col of s.fan)if(col.height>0)rect((col.c-2.5)*CELL,-col.height/2,CELL-1,col.height);
