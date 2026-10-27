@@ -2,6 +2,17 @@
    No video, third-party libraries, or network resources are loaded. */
 (() => {
   'use strict';
+  // A visit lasts for this tab's session. Mark it before playback so that
+  // refreshing or leaving during the animation cannot start it again.
+  const visitKey = 'caicaizi:entrance-seen';
+  let seen = false, internal = false;
+  try {
+    seen = sessionStorage.getItem(visitKey) === '1';
+    sessionStorage.setItem(visitKey, '1');
+  } catch { /* Navigation metadata still prevents replay if storage is blocked. */ }
+  try { internal = new URL(document.referrer).origin === location.origin; } catch {}
+  const navigation = performance.getEntriesByType?.('navigation')[0]?.type;
+  if (seen || internal || navigation === 'reload' || navigation === 'back_forward') return;
   const overlay = document.querySelector('.entrance');
   const canvas = document.querySelector('.entrance-canvas');
   const shell = document.querySelector('.shell');
@@ -44,7 +55,12 @@
     overlay.focus({preventScroll:true});raf=requestAnimationFrame(frame);watchdog=setTimeout(()=>finish(true),scene.durationMs + 3000);
   }
   addEventListener('resize',()=>{if(running){resize();draw(elapsed);}});
-  // Back/forward cache restores do not execute deferred scripts again.
-  addEventListener('pageshow',event=>{if(event.persisted){finish(true);begin();}});
+  // Restoring a cached page must never resume or restart the entrance.
+  const dismiss = () => {
+    finish(true);clearTimeout(exitTimer);overlay.hidden=true;
+    overlay.classList.remove('is-leaving');
+  };
+  addEventListener('pagehide',dismiss);
+  addEventListener('pageshow',event=>{if(event.persisted)dismiss();});
   begin();
 })();

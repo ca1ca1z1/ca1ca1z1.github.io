@@ -1,10 +1,10 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const source=fs.readFileSync(require('path').join(__dirname,'../entrance.js'),'utf8');
 const scene=require('../entrance-scene.js');
-function setup(reduced=false,width=1280,height=800){
+function setup(reduced=false,width=1280,height=800,visit={}){
   let cb;const timers=new Map();let timer=0;const events={};
   const classes=()=>{const s=new Set();return {add:x=>s.add(x),remove:x=>s.delete(x),contains:x=>s.has(x)}};
-  const document={activeElement:null,addEventListener:(k,f)=>events[k]=f};
+  const document={referrer:visit.referrer||'',activeElement:null,addEventListener:(k,f)=>events[k]=f};
   const el=()=>({hidden:false,inert:false,classList:classes(),events:{},addEventListener(k,f){this.events[k]=f},focus(){document.activeElement=this}});
   const overlay=el(),shell=el(),main=el(),body=el();overlay.hidden=true;document.body=body;document.activeElement=body;
   overlay.contains=x=>x===overlay;
@@ -14,6 +14,10 @@ function setup(reduced=false,width=1280,height=800){
   document.querySelector=s=>({'.entrance':overlay,'.entrance-canvas':canvas,'.shell':shell,'#main':main}[s]);
   const media={matches:reduced,addEventListener:(k,f)=>media.change=f};
   const sandbox={document,matchMedia:()=>media,innerWidth:width,innerHeight:height,devicePixelRatio:2,performance:{now:()=>0},scrollTo(){},addEventListener:(k,f)=>events[k]=f,requestAnimationFrame:f=>(cb=f,1),cancelAnimationFrame:()=>{cb=null},setTimeout:(f,ms)=>(timers.set(++timer,{f,ms}),timer),clearTimeout:id=>timers.delete(id)};
+  const storage=visit.storage||new Map();
+  sandbox.sessionStorage={getItem:k=>{if(visit.blocked)throw Error('blocked');return storage.get(k);},setItem:(k,v)=>{if(visit.blocked)throw Error('blocked');storage.set(k,v);}};
+  sandbox.URL=URL;sandbox.location={origin:'https://ca1ca1z1.github.io'};
+  sandbox.performance.getEntriesByType=()=>[{type:visit.type||'navigate'}];
   sandbox.window={PortfolioEntrance:scene};vm.runInNewContext(source,sandbox);
   return {overlay,shell,main,body,media,events,frame:ms=>cb?.(ms),timers,draws:()=>draws};
 }
@@ -22,16 +26,23 @@ for(const size of [[1280,800],[390,844],[844,390]]){
   for(let beat=0;beat<scene.T.end;beat+=.25)t.frame(beat*scene.BEAT_MS);
   assert(t.draws()>100);assert(t.shell.inert);t.frame(scene.durationMs+1);assert(!t.shell.inert);assert(!t.body.classList.contains('is-entering'));
   for(const v of [...t.timers.values()])if(v.ms===680)v.f();assert(t.overlay.hidden);
-  t.events.pageshow({persisted:true});assert(t.shell.inert);assert(!t.events.keydown);t.frame(scene.durationMs+1);assert(!t.shell.inert);
+  t.events.pageshow({persisted:true});assert(t.overlay.hidden&&!t.shell.inert);assert(!t.events.keydown);
 }
-// Every fresh document (including reload) starts even with reduced motion set.
-for(const reduced of [false,true])for(let load=0;load<2;load++){
-  const r=setup(reduced);assert(!r.overlay.hidden&&r.shell.inert);
-  r.frame(scene.durationMs+1);assert(!r.shell.inert);
-  r.events.pageshow({persisted:true});assert(!r.overlay.hidden&&r.shell.inert);
-  r.frame(scene.durationMs+1);assert(!r.shell.inert);
-  r.events.pageshow({persisted:true});assert(r.shell.inert);
+// First entry plays; reload, internal navigation and cache restoration do not.
+for(const reduced of [false,true]){
+  const storage=new Map();
+  const r=setup(reduced,1280,800,{storage});assert(!r.overlay.hidden&&r.shell.inert);
+  const repeat=setup(reduced,1280,800,{storage});assert(repeat.overlay.hidden&&!repeat.shell.inert);
+  r.events.pagehide();assert(r.overlay.hidden&&!r.shell.inert);
+  r.events.pageshow({persisted:true});assert(r.overlay.hidden&&!r.shell.inert);
+  const fresh=setup(reduced);assert(!fresh.overlay.hidden&&fresh.shell.inert);
 }
+for(const visit of [{type:'reload'},{type:'back_forward'},{referrer:'https://ca1ca1z1.github.io/404.html'},
+  {type:'reload',blocked:true},{type:'back_forward',blocked:true},{referrer:'https://ca1ca1z1.github.io/projects/',blocked:true}]){
+  const r=setup(false,1280,800,visit);assert(r.overlay.hidden&&!r.shell.inert&&r.draws()===0);
+}
+assert(!setup(false,1280,800,{referrer:'https://example.com/'}).overlay.hidden);
+assert(!setup(false,1280,800,{blocked:true}).overlay.hidden);
 const w=setup();[...w.timers.values()].find(t=>t.ms===scene.durationMs+3000).f();assert(w.overlay.hidden&&!w.shell.inert);
 // Boundary assertions are based on the requested choreography, not render calls.
 const state=scene.stateAt,cell=(f,r,c)=>state(f).cells.find(x=>x.r===r&&x.c===c).reveal;
