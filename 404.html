@@ -1,2 +1,52 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>页面未找到 · CAICAIZI</title><link rel="stylesheet" href="/style.css"></head><body><div class="shell"><header><a class="brand" href="/">CAICAIZI</a></header><main><p class="eyebrow">404 · PAGE NOT FOUND</p><h1 class="error-title">从新的起点，继续。</h1><p class="error-copy">这个页面已不存在，或链接有误。<br>网站正在重建，你可以返回首页。</p><a class="button" href="/">返回首页 →</a></main></div></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>404 · CAICAIZI</title>
+  <style>
+    :root { color-scheme: dark; background: #000; color: #bdbdbd; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 20px; }
+    h1 { margin: 0; font: 600 clamp(12px, 1vw, 20px)/1.5 Arial, Helvetica, sans-serif; text-align: center; }
+    #sentence { display: inline-block; white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1 aria-label="There's nothing here, not even remains."><span id="sentence" aria-hidden="true">There's nothing here, not even remains.</span></h1>
+  </main>
+  <script>
+    (() => {
+      const sentence = document.querySelector('#sentence');
+      // Punctuation gets its own beat, without inserting a space before it.
+      const tokens = ["There's", ' nothing', ' here', ',', ' not', ' even', ' remains', '.'];
+      const gaps = [460, 460, 320, 650, 420, 460, 360];
+      let timer, glow, index;
+      function typeNext() {
+        sentence.textContent += tokens[index];
+        if (glow) glow.cancel();
+        // Brighten the whole current sentence; never fade or hide the text.
+        if (sentence.animate) glow = sentence.animate([
+          { color: '#fff', textShadow: '0 0 2px #fff, 0 0 7px #fff, 0 0 15px rgba(255,255,255,.85)' },
+          { color: '#f5f5f5', textShadow: '0 0 2px rgba(255,255,255,.8), 0 0 6px rgba(255,255,255,.5)', offset: .25 },
+          { color: '#bdbdbd', textShadow: '0 0 0 transparent' }
+        ], { duration: 100, easing: 'ease-out' });
+        if (++index < tokens.length) timer = setTimeout(typeNext, gaps[index - 1]);
+      }
+      function start() {
+        clearTimeout(timer);
+        if (glow) glow.cancel();
+        sentence.textContent = '';
+        index = 0;
+        timer = setTimeout(typeNext, 350);
+      }
+      start();
+      window.addEventListener('pageshow', event => { if (event.persisted) start(); });
+    })();
+  </script>
+</body>
+</html>
+
