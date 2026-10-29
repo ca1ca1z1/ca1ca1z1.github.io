@@ -1,0 +1,14 @@
+(()=>{'use strict';
+const $=s=>document.querySelector(s),icon=$('#icon'),terminal=$('#terminal'),current=$('#current'),history=$('#history'),options=$('#options');
+let generation=0,busy=false,path=[],records=[];
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function type(el,text,token,speed=12){for(const c of text){if(token!==generation)return false;el.textContent+=c;await wait(speed);}return token===generation;}
+const prompt=()=> 'E:\\PORTFOLIO\\'+(path.length?path.join('\\')+'\\':'')+'> ';
+function save(){records.push(current.cloneNode(true));if(records.length>12)records.shift();history.replaceChildren(...records.map(n=>{const d=document.createElement('div');d.append(...Array.from(n.childNodes).map(c=>c.cloneNode(true)));return d;}));current.replaceChildren();}
+async function choices(token){options.replaceChildren();const entries=path.length?['..']:['BLENDER','FPGA','README.md'];for(const label of entries){if(token!==generation)return;const b=document.createElement('button'),prefix=document.createElement('span'),name=document.createElement('span');name.className='choice';b.append(prefix,name);b.disabled=true;options.append(b);await type(prefix,'> ',token);await type(name,label,token);if(token!==generation)return;b.disabled=false;b.onclick=()=>select(label);}busy=false;}
+async function line(token){current.replaceChildren();await type(current,prompt()+'cd ',token);if(token===generation)await choices(token);}
+async function select(label){if(busy)return;busy=true;const token=generation;options.replaceChildren();const file=label==='README.md';if(file){current.textContent=prompt();await type(current,'type ',token);}const name=document.createElement('span');name.className='choice';current.append(name);await type(name,label,token);if(token!==generation)return;save();if(file){await type(current,prompt(),token);await wait(100);if(token===generation)location.href='./readme.html';return;}if(label==='..')path.pop();else path.push(label);await line(token);}
+async function desktop(){const token=++generation;busy=false;path=[];records=[];terminal.hidden=true;icon.hidden=false;history.replaceChildren();current.replaceChildren();options.replaceChildren();$('#icon-text').textContent='';await type($('#icon-text'),'+-------------+\n| >_          |\n|             |\n+-------------+\n    Terminal',token,4);}
+async function open(){if(icon.hidden)return;const token=++generation;icon.hidden=true;terminal.hidden=false;busy=true;for(const [id,text] of [['#title','Terminal'],['#minimize','-'],['#maximize','□'],['#close','x']]){$(id).textContent='';await type($(id),text,token,8);}if(token===generation){await line(token);options.querySelector('button')?.focus({preventScroll:true});}}
+icon.ondblclick=open;icon.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}};$('#minimize').onclick=desktop;$('#close').onclick=desktop;desktop();
+})();
