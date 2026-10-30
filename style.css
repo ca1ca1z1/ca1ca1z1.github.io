@@ -2,3 +2,5 @@
 
 #icon{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:120px}#icon-text{font-size:7px;line-height:1.4;width:15ch;height:5.6em;text-align:left}#icon-name{font:16px/1.4 "Courier New",monospace;width:8ch;height:1.4em;text-align:left;white-space:pre}#history{max-height:calc(50svh - 150px)}
 #current::after{content:'|';animation:caret-blink 1s steps(1,end) infinite}#current:focus-within::after{visibility:hidden}#command{display:inline;min-width:1ch;white-space:pre-wrap;outline:none;caret-color:#f3f3ed}#command:empty::before{content:'\200b'}@keyframes caret-blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+.error{color:#ff6565!important}
