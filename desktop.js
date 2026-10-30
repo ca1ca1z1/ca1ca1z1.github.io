@@ -14,7 +14,7 @@ async function line(){const token=generation;busy=true;current.classList.remove(
 async function erase(token){
   $('#minimize').disabled=true;$('#close').disabled=true;
   for(const message of ["removed directory '/portfolio/BLENDER'","removed directory '/portfolio/FPGA'","removed '/portfolio/README.md'","removed directory '/portfolio'","Session terminated."]){
-    await type(current,message,token,16);if(token!==generation)return;
+    await type(current,message,token,4);if(token!==generation)return;
     log(message);current.replaceChildren();await wait(180);
   }
   window.portfolioAccess.lock();
