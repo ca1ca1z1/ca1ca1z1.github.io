@@ -17,14 +17,17 @@ async function unlock(panel,entry,button){
   const form=document.createElement('form'),label=document.createElement('label'),field=document.createElement('span'),input=document.createElement('input');
   form.className='password-line';field.className='password-field';field.hidden=true;
   input.id='archive-password';input.type='password';input.autocomplete='off';input.required=true;input.setAttribute('aria-label','Archive password');label.htmlFor=input.id;
-  field.append(input);form.append(label,field);panel.append(form);
+  const mask=document.createElement('span');mask.className='password-mask';mask.setAttribute('aria-hidden','true');
+  function syncMask(){mask.textContent='*'.repeat(Array.from(input.value).length);field.style.setProperty('--cursor',Array.from(input.value.slice(0,input.selectionStart??input.value.length)).length);}
+  for(const event of ['input','keyup','click','select','focus'])input.addEventListener(event,syncMask);
+  field.append(mask,input);form.append(label,field);panel.append(form);
   await type(label,'> enter password: ');field.hidden=false;
   if(!panel.hidden)input.focus({preventScroll:true});
   let busy=false;
   form.onsubmit=async event=>{
    event.preventDefault();if(busy)return;busy=true;
-   const accepted=input.value==='0123';input.value='';input.disabled=true;
-   const previous=document.createElement('p');previous.className='terminal-line';previous.textContent=label.textContent;form.replaceWith(previous);
+   const accepted=input.value==='0123',masked='*'.repeat(Array.from(input.value).length);input.value='';input.disabled=true;
+   const previous=document.createElement('p');previous.className='terminal-line';previous.textContent=label.textContent+masked;form.replaceWith(previous);
    const status=document.createElement('p');status.className='terminal-line '+(accepted?'success':'error');status.setAttribute('role','status');panel.append(status);
    await type(status,accepted?'> Authentication successful.':'> Access denied.');
    if(accepted)await paragraphs(panel,entry.paragraphs);
