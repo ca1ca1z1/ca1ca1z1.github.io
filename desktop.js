@@ -2,7 +2,7 @@
 const $=s=>document.querySelector(s),icon=$('#icon'),terminal=$('#terminal'),current=$('#current'),historyBox=$('#history'),options=$('#options');
 let generation=0,suggestion=0,busy=false,path=[],records=[],editor;
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-async function type(el,text,token,speed=12){for(const c of text){if(token!==generation)return false;el.textContent+=c;await wait(speed);}return token===generation;}
+async function type(el,text,token,speed=12){if(speed<4){const start=performance.now(),prefix=el.textContent;while(token===generation){const count=Math.min(text.length,Math.floor((performance.now()-start)/speed));el.textContent=prefix+text.slice(0,count);if(count===text.length)return true;await new Promise(requestAnimationFrame);}return false;}for(const c of text){if(token!==generation)return false;el.textContent+=c;await wait(speed);}return token===generation;}
 const prompt=()=> 'guest@caicaizi:/portfolio'+(path.length?'/'+path.join('/'):'')+'$ ';
 const parse=()=>{const m=(editor?.textContent||'').trimStart().match(/^(\S+)(?:\s+(.*))?$/);return {cmd:(m?.[1]||''),arg:(m?.[2]||'').trim()};};
 function candidates(){const {cmd,arg}=parse();const list=cmd==='cd'?(path.length?['..']:['BLENDER','FPGA']):cmd==='cat'&&!path.length?['README.md']:[];return list.filter(x=>x.startsWith(arg));}
@@ -14,8 +14,8 @@ async function line(){const token=generation;busy=true;current.classList.remove(
 async function erase(token){
   $('#minimize').disabled=true;$('#close').disabled=true;
   for(const message of ["removed directory '/portfolio/BLENDER'","removed directory '/portfolio/FPGA'","removed '/portfolio/README.md'","removed directory '/portfolio'","Session terminated."]){
-    await type(current,message,token,4);if(token!==generation)return;
-    log(message);current.replaceChildren();await wait(180);
+    await type(current,message,token,1);if(token!==generation)return;
+    log(message);current.replaceChildren();
   }
   window.portfolioAccess.lock();
   await wait(300);
