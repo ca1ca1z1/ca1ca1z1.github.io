@@ -9,24 +9,29 @@ const entries=[
 ];
 async function paragraphs(panel,items){for(const text of items){const p=document.createElement('p');panel.append(p);await type(p,text);}}
 async function unlock(panel,entry,button){
- const progress=document.createElement('p');panel.append(progress);
+ const progress=document.createElement('p');progress.className='terminal-line';panel.append(progress);
  await type(progress,'> loading archive... ');
  const value=document.createElement('span');progress.append(value);
  for(let n=0;n<=99;n++){value.textContent=n+'%';await wait(n>90?35:10);}
- const form=document.createElement('form'),label=document.createElement('label'),input=document.createElement('input'),submit=document.createElement('button');
- input.id='archive-password';input.type='password';input.autocomplete='off';input.required=true;input.setAttribute('aria-label','Archive password');label.htmlFor=input.id;submit.type='submit';
- form.append(label,input,submit);panel.append(form);input.hidden=true;submit.hidden=true;
- await type(label,'> enter password:');await type(submit,'[enter]');input.hidden=false;submit.hidden=false;
- if(!panel.hidden)input.focus({preventScroll:true});
- let busy=false;
- form.onsubmit=async event=>{
-  event.preventDefault();if(busy)return;busy=true;input.disabled=true;submit.disabled=true;
-  const accepted=input.value==='0123';input.value='';
-  const status=document.createElement('p');status.className=accepted?'success':'error';status.setAttribute('role','status');form.before(status);
-  await type(status,accepted?'> Authentication successful.':'> Access denied.');
-  if(accepted){form.remove();await paragraphs(panel,entry.paragraphs);}
-  else{busy=false;input.disabled=false;submit.disabled=false;if(!panel.hidden)input.focus({preventScroll:true});}
- };
+ async function askPassword(){
+  const form=document.createElement('form'),label=document.createElement('label'),field=document.createElement('span'),input=document.createElement('input');
+  form.className='password-line';field.className='password-field';field.hidden=true;
+  input.id='archive-password';input.type='password';input.autocomplete='off';input.required=true;input.setAttribute('aria-label','Archive password');label.htmlFor=input.id;
+  field.append(input);form.append(label,field);panel.append(form);
+  await type(label,'> enter password: ');field.hidden=false;
+  if(!panel.hidden)input.focus({preventScroll:true});
+  let busy=false;
+  form.onsubmit=async event=>{
+   event.preventDefault();if(busy)return;busy=true;
+   const accepted=input.value==='0123';input.value='';input.disabled=true;
+   const previous=document.createElement('p');previous.className='terminal-line';previous.textContent=label.textContent;form.replaceWith(previous);
+   const status=document.createElement('p');status.className='terminal-line '+(accepted?'success':'error');status.setAttribute('role','status');panel.append(status);
+   await type(status,accepted?'> Authentication successful.':'> Access denied.');
+   if(accepted)await paragraphs(panel,entry.paragraphs);
+   else await askPassword();
+  };
+ }
+ await askPassword();
 }
 async function boot(){
  await type(document.querySelector('#access-text'),'> accessing □□ archive...');

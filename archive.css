@@ -3,6 +3,13 @@
 .access{margin:0 0 36px;min-height:1.8em}#spinner{display:inline-block;width:1ch;margin-left:1ch}
 .entry{margin:0 0 22px}.entry>button{display:grid;grid-template-columns:23ch 1fr;width:100%;text-align:left;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer;min-height:1.8em}.entry>button:hover,.entry>button[aria-expanded=true]{color:#182bff}
 button:focus-visible,a:focus-visible{outline:1px dashed #f3f3ed;outline-offset:6px}.content{padding:8px 0 16px 3ch;overflow-wrap:anywhere}.content p{white-space:pre-wrap;margin:18px 0 28px}.content[hidden]{display:none}
-form{display:flex;align-items:center;flex-wrap:wrap;gap:1ch;margin:16px 0}input{font:inherit;color:inherit;background:transparent;border:0;border-bottom:1px solid #686868;width:12ch;outline-offset:4px}form button{font:inherit;color:#182bff;border:0;background:none;cursor:pointer;padding:0}.error{color:#ff6565}.success{color:#89df69}
+.content .terminal-line,.password-line{margin:0;min-height:1.8em;line-height:1.8;white-space:pre-wrap}
+.password-line{display:flex;align-items:baseline;flex-wrap:wrap;gap:0}
+.password-field{position:relative;display:inline-block;width:12ch;height:1.8em;vertical-align:bottom}
+.password-field[hidden]{display:none}
+.password-field input{position:absolute;inset:0;width:100%;height:100%;padding:0;margin:0;border:0;outline:none;box-shadow:none;background:transparent;font:inherit;color:transparent;caret-color:transparent}
+.password-field::after{content:'|';pointer-events:none;animation:password-caret 1s steps(1,end) infinite}
+@keyframes password-caret{0%,49%{opacity:1}50%,100%{opacity:0}}
+.error{color:#ff6565}.success{color:#89df69}
 #exit{display:inline-block;color:#182bff;text-decoration:none;margin-top:24px;min-height:1.8em}.prompt{color:#f3f3ed}
 @media(max-width:520px){:root{font-size:13px}main{padding-left:18px;padding-right:18px}.entry>button{grid-template-columns:22ch 1fr}.content{padding-left:2ch}}
