@@ -8,3 +8,5 @@
 - Before completing a content update, verify the file list, command navigation, and removal log agree; update relevant checks when the virtual structure changes.
 
 - `README.md` in the virtual terminal opens the personal devlog reader (`readme.html`, `archive.js`, `archive.css`). Keep it out of `cd` suggestions and available under `cat`/`ls`. Reader implementation assets are not extra virtual portfolio files. The GitHub repository README remains the short website description.
+
+- Maintain the virtual directory tree in `portfolio/filesystem.js` (published as `filesystem.js`). All terminal listing, completion, navigation, and removal logs derive from this one tree. Use uppercase hyphen-separated directory names for multiword categories.
