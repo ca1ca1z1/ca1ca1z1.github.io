@@ -1,17 +1,20 @@
 (function(root){'use strict';
-const directory=children=>({type:'directory',children});
+const directory=children=>({type:'directory',children:Object.fromEntries(Object.entries(children).sort(([a,x],[b,y])=>{
+ if(x.type!==y.type)return x.type==='directory'?-1:1;
+ return a<b?-1:a>b?1:0;
+}))});
 const tree=directory({
  SKILLS:directory({
-  'PROGRAMMING-LANGUAGES':directory({}),
+  'PROGRAMMING_LANGUAGES':directory({}),
   HARDWARE:directory({}),
-  '3D-MODELING':directory({}),
+  '3D_MODELING':directory({}),
   MANUFACTURING:directory({}),
   DATABASES:directory({}),
-  'MACHINE-LEARNING':directory({})
+  'MACHINE_LEARNING':directory({})
  }),
  EXPERIENCE:directory({
-  'PROFESSIONAL-EXPERIENCE':directory({}),
-  'ADDITIONAL-EXPERIENCE':directory({})
+  'PROFESSIONAL_EXPERIENCE':directory({}),
+  'ADDITIONAL_EXPERIENCE':directory({})
  }),
  PROJECTS:directory({}),
  PUBLICATIONS:directory({}),
