@@ -1,13 +1,16 @@
 /* Home — the entrance's own language: black field, off-white type, blue/green signals. */
 :root{
   color-scheme:dark;
-  --bg:#101010;--fg:#f3f3ed;--blue:#182bff;--muted:#a3a39c;--rule:#2e2e2e;
+  --bg:#101010;--fg:#f3f3ed;--blue:#182bff;--green:#a3ff77;--orange:#ff5a1f;--muted:#a3a39c;--rule:#2e2e2e;
   --mono:"Courier New",monospace;
-  --edge:48px;
+  --edge:48px;--focus:var(--orange);
 }
 @media(max-width:600px){:root{--edge:20px}}
+::selection{background:var(--orange);color:var(--bg)}
 
-.shell{min-height:100svh;display:flex;flex-direction:column}
+/* Interactive background (field.js). Sits under everything; never takes input. */
+.field{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.shell{position:relative;z-index:1;min-height:100svh;display:flex;flex-direction:column}
 main{flex:1;display:flex;flex-direction:column;padding:0 var(--edge) var(--edge)}
 main:focus{outline:none}
 
@@ -21,10 +24,11 @@ main:focus{outline:none}
 
 .intro{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:880px;padding:48px 0}
 .intro h1{margin:0 0 28px;font:600 clamp(52px,9vw,128px)/.9 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-.04em;text-transform:uppercase}
-.intro p{margin:0;max-width:56ch;font-size:clamp(17px,1.5vw,20px);color:var(--muted)}
+.intro p{margin:0;font:700 clamp(17px,1.6vw,22px)/1.4 var(--mono);letter-spacing:.04em;color:var(--fg)}
+.intro p::before{content:'';display:inline-block;width:.6em;height:.6em;margin-right:.7em;background:var(--orange);vertical-align:.05em}
 
 /* Index: four columns, echoing the entrance's closing column fan. */
-.index{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--rule)}
+.index{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--rule);background:rgb(16 16 16 / .88)}
 .index a{position:relative;isolation:isolate;display:grid;grid-template-rows:auto 1fr auto auto;gap:8px;
   min-height:clamp(220px,34vh,340px);padding:20px;border-right:1px solid var(--rule);text-decoration:none;overflow:hidden}
 .index a:last-child{border-right:0}
