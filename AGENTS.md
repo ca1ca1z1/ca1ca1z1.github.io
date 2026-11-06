@@ -1,12 +1,23 @@
 # Portfolio maintenance rules
 
-- The active website source is in `portfolio/`; its contents are published at the GitHub Pages repository root.
-- Keep all visitor-facing website text in English, except the user-approved temporary Chinese devlog body placeholders.
-- Whenever portfolio files or folders are added, modified, renamed, moved, or removed, review and update the terminal's virtual file list, `ls` output, `cd`/`cat` suggestions, navigation targets, and simulated removal log together. They must reflect the same current portfolio structure, including nested content. Do not add build tools or implementation files to the visitor-facing virtual file list.
-- The removal easter egg is triggered identically by `rm -rf` and `rm -rf /` (not `-rm -rf`). It is a visual simulation only: never execute a real shell deletion or delete site assets. Keep its log synchronized with the virtual files and directories, listing children before their containing directories.
-- Preserve the removal animation's 1 ms per-character timing, no pauses between log lines, and one-minute browser access restriction unless the user requests a change.
-- Before completing a content update, verify the file list, command navigation, and removal log agree; update relevant checks when the virtual structure changes.
+Static GitHub Pages site, published from the repository root. No build step, no dependencies, no network resources.
 
-- `README.md` in the virtual terminal opens the personal devlog reader (`readme.html`, `archive.js`, `archive.css`). Keep it out of `cd` suggestions and available under `cat`/`ls`. Reader implementation assets are not extra virtual portfolio files. The GitHub repository README remains the short website description.
+## Files
+- `index.html` — the whole site. Content is edited here directly.
+- `site.css`, `site.js` — page styling and behaviour (scroll meter, section tracking, evidence links).
+- `entrance.js`, `entrance-scene.js`, `entrance.css` — opening animation. Do not change its choreography unless asked; `tests/entrance.test.cjs` pins its timing.
+- `404.html` — standalone; keep as is.
 
-- Maintain the virtual directory tree in `portfolio/filesystem.js` (published as `filesystem.js`). All terminal listing, completion, navigation, and removal logs derive from this one tree. Use uppercase underscore-separated directory names for multiword categories (for example, `PROGRAMMING_LANGUAGES`). Sort sibling directories lexicographically A–Z at every level, with digits before letters. Show directories before files in mixed lists; sort files within their group. Keep the `..` navigation option after the directory choices. Apply this ordering consistently to listings, suggestions, and recursive removal logs.
+## Content rules
+- Visitor-facing text is English. Audience is recruiters and professionals: no taglines, no instructional copy, no filler labels.
+- Work entries use codes `P-01, P-02, …`; experience uses `E-01, …`. Codes are sequential, unique and match the element `id`.
+- Capability rows list only evidence codes that exist. Never add self-ratings. An empty evidence cell is intentional and renders as `—`.
+- Keep the design tokens in `site.css` in sync with the entrance colours (`#101010`, `#f3f3ed`, `#182bff`, `#a3ff77`).
+
+## Checks
+Run before committing:
+
+```
+node tests/entrance.test.cjs
+node tests/site.test.cjs
+```

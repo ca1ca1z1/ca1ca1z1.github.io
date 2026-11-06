@@ -1,1 +1,151 @@
-<!doctype html><html lang="en"><head><script src="./access.js?v=1"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CAICAIZI | Terminal</title><link rel="stylesheet" href="./style.css?v=wide1"><link rel="stylesheet" href="./entrance.css"><script src="./entrance-scene.js" defer></script><script src="./entrance.js" defer></script><script src="./filesystem.js?v=2" defer></script><script src="./desktop.js?v=directories1" defer></script></head><body><section class="entrance" hidden tabindex="-1" aria-label="Portfolio entrance animation"><canvas class="entrance-canvas" aria-hidden="true"></canvas><p class="entrance-description">CAICAIZI · Personal portfolio</p></section><div class="shell"><main id="main" tabindex="-1"><button id="icon" aria-label="Open Terminal" title="Double-click to open"><pre id="icon-text"></pre><span id="icon-name"></span></button><section id="terminal" hidden aria-label="Terminal"><header><span id="title"></span><div><button id="minimize" aria-label="Minimize"></button><button id="maximize" aria-label="Maximize" title="Maximize"></button><button id="close" aria-label="Close"></button></div></header><div id="console"><div id="history" aria-live="polite"></div><div id="current"></div><div id="options"></div></div></section></main></div></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yuning Cai</title>
+<meta name="description" content="Yuning Cai — Computer Engineering, University of Toronto. Projects, experience and evidence of skills.">
+<link rel="stylesheet" href="./site.css?v=1">
+<link rel="stylesheet" href="./entrance.css">
+<script src="./entrance-scene.js" defer></script>
+<script src="./entrance.js" defer></script>
+<script src="./site.js?v=1" defer></script>
+</head>
+<body>
+<section class="entrance" hidden tabindex="-1" aria-label="Portfolio entrance animation"><canvas class="entrance-canvas" aria-hidden="true"></canvas><p class="entrance-description">CAICAIZI · Personal portfolio</p></section>
+
+<div class="shell">
+<header class="hud">
+  <a class="hud-id" href="#top">CAI / PERSONAL ARCHIVE</a>
+  <nav class="hud-nav" aria-label="Sections">
+    <a href="#work"><b>01</b>Work</a>
+    <a href="#experience"><b>02</b>Experience</a>
+    <a href="#capability"><b>03</b>Capability</a>
+    <a href="#record"><b>04</b>Record</a>
+  </nav>
+</header>
+
+<main id="main" tabindex="-1">
+
+  <!-- 00 · Identity: everything a reviewer needs in one screen. -->
+  <section id="top" class="identity" aria-label="Profile">
+    <h1>Yuning<br>Cai</h1>
+    <dl class="facts">
+      <div><dt>Program</dt><dd>BASc Computer Engineering, University of Toronto</dd></div>
+      <div><dt>Standing</dt><dd>Year 2 · PEY Co-op · Class of 2030</dd></div>
+      <div><dt>Based</dt><dd>Toronto, ON</dd></div>
+      <div><dt>Status</dt><dd><span class="signal">Open</span> — term TBD</dd></div>
+    </dl>
+    <ul class="links">
+      <li><a href="#" aria-disabled="true">Résumé</a></li>
+      <li><a href="mailto:charless.cai@mail.utoronto.ca">Email</a></li>
+      <li><a href="https://github.com/ca1ca1z1" rel="me">GitHub</a></li>
+      <li><a href="https://www.linkedin.com/in/yuningcai" rel="me">LinkedIn</a></li>
+    </ul>
+  </section>
+
+  <!-- 01 · Work. One <details> per entry; id = evidence code used in Capability. -->
+  <section id="work" class="sheet" data-label="Work">
+    <h2 class="mark"><i>/</i><span>01</span>Work</h2>
+    <div class="rows">
+      <details class="row" id="P-01" data-skills="python scikit-learn pandas numpy">
+        <summary><code>P-01</code><strong>Seismic Model Generalization</strong><span>Research</span><time>2024</time></summary>
+        <dl class="brief">
+          <div><dt>Problem</dt><dd>—</dd></div>
+          <div><dt>Approach</dt><dd>—</dd></div>
+          <div><dt>Result</dt><dd>—</dd></div>
+          <div><dt>Stack</dt><dd>Python · scikit-learn · pandas · NumPy</dd></div>
+          <div><dt>Links</dt><dd>—</dd></div>
+        </dl>
+      </details>
+      <details class="row" id="P-02" data-skills="dify python mysql excel vlm">
+        <summary><code>P-02</code><strong>HR Reporting Automation</strong><span>Industry</span><time>2026</time></summary>
+        <dl class="brief">
+          <div><dt>Problem</dt><dd>—</dd></div>
+          <div><dt>Approach</dt><dd>—</dd></div>
+          <div><dt>Result</dt><dd>—</dd></div>
+          <div><dt>Stack</dt><dd>Dify · Python · MySQL · Excel · VLM</dd></div>
+          <div><dt>Links</dt><dd>—</dd></div>
+        </dl>
+      </details>
+      <details class="row" id="P-03" data-skills="documentation">
+        <summary><code>P-03</code><strong>Accessible Route Design</strong><span>Design</span><time>2025</time></summary>
+        <dl class="brief">
+          <div><dt>Problem</dt><dd>—</dd></div>
+          <div><dt>Approach</dt><dd>—</dd></div>
+          <div><dt>Result</dt><dd>—</dd></div>
+          <div><dt>Stack</dt><dd>—</dd></div>
+          <div><dt>Links</dt><dd>—</dd></div>
+        </dl>
+      </details>
+      <details class="row" id="P-04" data-skills="">
+        <summary><code>P-04</code><strong>Untitled</strong><span>—</span><time>—</time></summary>
+        <dl class="brief">
+          <div><dt>Problem</dt><dd>—</dd></div>
+          <div><dt>Approach</dt><dd>—</dd></div>
+          <div><dt>Result</dt><dd>—</dd></div>
+          <div><dt>Stack</dt><dd>—</dd></div>
+          <div><dt>Links</dt><dd>—</dd></div>
+        </dl>
+      </details>
+    </div>
+  </section>
+
+  <!-- 02 · Experience. Newest first. -->
+  <section id="experience" class="sheet" data-label="Experience">
+    <h2 class="mark"><i>/</i><span>02</span>Experience</h2>
+    <div class="rows">
+      <details class="row" id="E-01" data-skills="dify python mysql excel vlm">
+        <summary><code>E-01</code><strong>AU Optronics</strong><span>Business Process Automation Intern</span><time>2026.06–07</time></summary>
+        <dl class="brief"><div><dt>Scope</dt><dd>—</dd></div><div><dt>Outcome</dt><dd>—</dd></div></dl>
+      </details>
+      <details class="row" id="E-02" data-skills="">
+        <summary><code>E-02</code><strong>Crestwood Preparatory College</strong><span>Mathematics Peer Tutor</span><time>2024.09–2025.06</time></summary>
+        <dl class="brief"><div><dt>Scope</dt><dd>—</dd></div><div><dt>Outcome</dt><dd>—</dd></div></dl>
+      </details>
+      <details class="row" id="E-03" data-skills="python scikit-learn">
+        <summary><code>E-03</code><strong>Oxford ML Seminar</strong><span>Student Researcher</span><time>2024.08</time></summary>
+        <dl class="brief"><div><dt>Scope</dt><dd>—</dd></div><div><dt>Outcome</dt><dd>—</dd></div></dl>
+      </details>
+    </div>
+  </section>
+
+  <!-- 03 · Capability. Each skill lists the entries that prove it; no self-ratings. -->
+  <section id="capability" class="sheet" data-label="Capability">
+    <h2 class="mark"><i>/</i><span>03</span>Capability</h2>
+    <table class="matrix">
+      <thead><tr><th scope="col">Domain</th><th scope="col">Skill</th><th scope="col">Evidence</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" rowspan="2">Programming</th><td>C++</td><td></td></tr>
+        <tr><td>Python</td><td><a href="#P-01">P-01</a><a href="#P-02">P-02</a><a href="#E-03">E-03</a></td></tr>
+        <tr><th scope="row" rowspan="3">Data</th><td>scikit-learn · pandas · NumPy</td><td><a href="#P-01">P-01</a></td></tr>
+        <tr><td>MySQL</td><td><a href="#P-02">P-02</a><a href="#E-01">E-01</a></td></tr>
+        <tr><td>Dify · VLM workflows</td><td><a href="#P-02">P-02</a><a href="#E-01">E-01</a></td></tr>
+        <tr><th scope="row" rowspan="2">Design</th><td>SolidWorks · Blender</td><td></td></tr>
+        <tr><td>Technical documentation</td><td><a href="#P-03">P-03</a></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 04 · Record: publication and honours. -->
+  <section id="record" class="sheet" data-label="Record">
+    <h2 class="mark"><i>/</i><span>04</span>Record</h2>
+    <ol class="ledger">
+      <li><time>2024</time><p>Evaluating the Generalizability of Machine Learning Models for Seismic Data Prediction Across Different Regions. <em>DAML 2024</em>, pp. 106–114.</p><a href="https://doi.org/10.5220/0013509700004619">DOI</a></li>
+      <li><time>2025</time><p>Dean’s Honours List, University of Toronto</p></li>
+      <li><time>2022</time><p>Canadian Computing Competition, Junior — 65/75</p></li>
+      <li><time>—</time><p>USACO Silver</p></li>
+    </ol>
+  </section>
+
+  <footer class="end">
+    <span>Yuning Cai</span>
+    <a href="mailto:charless.cai@mail.utoronto.ca">charless.cai@mail.utoronto.ca</a>
+  </footer>
+</main>
+
+<!-- Scroll position, drawn like the entrance progress bar. -->
+<div class="meter" aria-hidden="true"><span class="meter-value">000</span><span class="meter-cells"></span><span class="meter-label">PORTFOLIO / 000</span></div>
+</div>
+</body>
+</html>
