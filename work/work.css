@@ -1,0 +1,30 @@
+/* Work — exhibition catalogue: paper ground, serif display, numbered plates. */
+:root{
+  color-scheme:light;
+  --bg:#f3f3ed;--fg:#141412;--muted:#5d5c55;--rule:#cfcdc2;--plate:#e3e1d7;--accent:#182bff;
+  --serif:Georgia,"Times New Roman",serif;--mono:ui-monospace,Consolas,"Courier New",monospace;
+  --edge:48px;--focus:var(--accent);
+}
+@media(max-width:600px){:root{--edge:20px}}
+
+.bar{border-bottom:1px solid var(--rule)}
+main{padding:0 var(--edge) 120px}
+h1{margin:72px 0 56px;font:400 clamp(64px,11vw,160px)/.9 var(--serif);letter-spacing:-.03em}
+h1 sup{font:500 16px/1 var(--mono);letter-spacing:.06em;vertical-align:top;color:var(--muted);margin-left:8px}
+
+.catalogue{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:72px 48px}
+article{scroll-margin-top:32px}
+.plate{aspect-ratio:16/10;background:
+  repeating-linear-gradient(135deg,transparent 0 11px,var(--rule) 11px 12px),var(--plate)}
+.meta{display:flex;gap:20px;margin:16px 0 6px;font:500 14px/1.4 var(--mono);letter-spacing:.04em;color:var(--muted)}
+.meta span:first-child{color:var(--fg)}
+article h2{margin:0 0 20px;font:400 clamp(26px,2.6vw,34px)/1.15 var(--serif)}
+article dl{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 16px;margin:0;padding-top:16px;border-top:1px solid var(--rule)}
+article dt{font:500 14px/1.6 var(--mono);color:var(--muted)}
+article dd{margin:0}
+
+/* Linked from Capability: mark the entry that was asked for. */
+article:target .plate{outline:3px solid var(--accent);outline-offset:6px}
+article:target .meta span:first-child{color:var(--accent)}
+
+@media(max-width:860px){.catalogue{grid-template-columns:minmax(0,1fr);gap:56px}}

@@ -1,0 +1,57 @@
+/* Home — the entrance's own language: black field, off-white type, blue/green signals. */
+:root{
+  color-scheme:dark;
+  --bg:#101010;--fg:#f3f3ed;--blue:#182bff;--muted:#a3a39c;--rule:#2e2e2e;
+  --mono:"Courier New",monospace;
+  --edge:48px;
+}
+@media(max-width:600px){:root{--edge:20px}}
+
+.shell{min-height:100svh;display:flex;flex-direction:column}
+main{flex:1;display:flex;flex-direction:column;padding:0 var(--edge) var(--edge)}
+main:focus{outline:none}
+
+/* HUD occupies the entrance's header position. */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px var(--edge);
+  font:700 14px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.hud span{color:var(--muted)}
+.hud nav{display:flex;gap:24px}
+.hud a{text-decoration:none;border-bottom:1px solid transparent}
+.hud a:hover{border-bottom-color:currentColor}
+
+.intro{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:880px;padding:48px 0}
+.intro h1{margin:0 0 28px;font:600 clamp(52px,9vw,128px)/.9 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-.04em;text-transform:uppercase}
+.intro p{margin:0;max-width:56ch;font-size:clamp(17px,1.5vw,20px);color:var(--muted)}
+
+/* Index: four columns, echoing the entrance's closing column fan. */
+.index{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--rule)}
+.index a{position:relative;isolation:isolate;display:grid;grid-template-rows:auto 1fr auto auto;gap:8px;
+  min-height:clamp(220px,34vh,340px);padding:20px;border-right:1px solid var(--rule);text-decoration:none;overflow:hidden}
+.index a:last-child{border-right:0}
+.index a::before{content:'';position:absolute;inset:0;z-index:-1;background:var(--fg);
+  transform:scaleY(0);transform-origin:bottom;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+.index a::after{content:'';position:absolute;top:22px;right:20px;width:14px;height:14px;background:var(--swatch);outline:1px solid var(--rule)}
+.index a:hover::before,.index a:focus-visible::before{transform:scaleY(1)}
+.index a:hover,.index a:focus-visible{color:var(--bg)}
+.index a:focus-visible{outline-offset:-4px}
+.n{font:700 14px/1 var(--mono);color:var(--muted);transition:color .2s}
+.index strong{align-self:end;font:600 clamp(28px,3vw,40px)/1 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-.02em}
+.d{font-size:16px;color:var(--muted);transition:color .2s}
+.c{font:700 14px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);transition:color .2s}
+.index a:hover :is(.n,.d,.c),.index a:focus-visible :is(.n,.d,.c){color:#4a4a45}
+
+@media(max-width:860px){
+  .index{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .index a:nth-child(2){border-right:0}
+  .index a:nth-child(-n+2){border-bottom:1px solid var(--rule)}
+}
+@media(max-width:600px){
+  .hud span{display:none}
+  .hud{justify-content:flex-end}
+  .index{grid-template-columns:minmax(0,1fr)}
+  .index a{min-height:0;border-right:0;border-bottom:1px solid var(--rule);grid-template-rows:auto;grid-template-columns:40px 1fr;column-gap:12px}
+  .index a:last-child{border-bottom:0}
+  .index a .n{grid-row:1/4}
+  .index strong{align-self:start}
+  .index a::after{top:24px}
+}

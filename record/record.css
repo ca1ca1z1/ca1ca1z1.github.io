@@ -1,0 +1,29 @@
+/* Record — a filed document: warm archival paper, typewriter type, ruled sections. */
+:root{
+  color-scheme:light;
+  --bg:#d8cfb8;--paper:#f1ebdc;--fg:#22201a;--muted:#5f5a4c;--rule:#c6bca3;--stamp:#b3261e;
+  --type:"Courier New",Courier,monospace;
+  --edge:48px;--focus:var(--stamp);--body:var(--type);
+}
+@media(max-width:600px){:root{--edge:12px}}
+
+body{font-weight:600}
+.bar{font-weight:700}
+main{padding:24px var(--edge) 120px}
+.sheet{max-width:820px;margin:0 auto;padding:clamp(28px,6vw,72px);background:var(--paper);box-shadow:0 1px 0 var(--rule),0 18px 40px -24px #6b5d3d}
+
+.head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:start;padding-bottom:28px;border-bottom:3px double var(--fg)}
+.head h1{margin:0;font:700 clamp(40px,6vw,64px)/1 var(--type);letter-spacing:.12em;text-transform:uppercase}
+.head dl{grid-column:1/-1;display:grid;grid-template-columns:110px minmax(0,1fr);gap:4px 16px;margin:0}
+.head dt{color:var(--muted);text-transform:uppercase;font-size:15px;letter-spacing:.06em;line-height:1.7}
+.head dd{margin:0}
+
+section{margin-top:44px}
+h2{margin:0 0 12px;font:700 17px/1.4 var(--type);letter-spacing:.1em;text-transform:uppercase}
+ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+li{display:grid;grid-template-columns:72px minmax(0,1fr);gap:16px;padding:14px 0;border-bottom:1px dashed var(--rule)}
+li time{color:var(--muted)}
+li p{margin:0}
+li a{color:var(--stamp);text-underline-offset:3px;overflow-wrap:anywhere}
+
+@media(max-width:600px){li{grid-template-columns:minmax(0,1fr);gap:2px}}

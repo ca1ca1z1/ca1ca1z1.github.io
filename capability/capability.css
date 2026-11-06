@@ -1,0 +1,34 @@
+/* Capability — instrument readout: graph-paper black, phosphor green, monospace throughout. */
+:root{
+  color-scheme:dark;
+  --bg:#0b0d0b;--fg:#e8efe4;--green:#a3ff77;--muted:#9fae99;--rule:#2b332a;--grid:#151a15;
+  --mono:ui-monospace,Consolas,"Courier New",monospace;
+  --edge:48px;--focus:var(--green);--body:var(--mono);
+}
+@media(max-width:600px){:root{--edge:20px}}
+
+body{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:32px 32px;background-attachment:fixed}
+.bar{border-bottom:1px solid var(--rule);color:var(--green)}
+main{padding:0 var(--edge) 120px;max-width:1200px}
+h1{margin:72px 0 56px;font:400 clamp(40px,6vw,80px)/1 var(--mono);letter-spacing:-.02em}
+h1 span:first-child{color:var(--green)}
+.cursor{color:var(--green);animation:blink 1s steps(1,end) infinite}
+@keyframes blink{50%{opacity:0}}
+
+.spec{width:100%;border-collapse:collapse;border:1px solid var(--rule);background:var(--bg)}
+.spec th,.spec td{text-align:left;vertical-align:baseline;padding:16px 20px;border-bottom:1px solid var(--rule);font-weight:400}
+.spec thead th{font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:#111511}
+.spec tbody th{font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border-right:1px solid var(--rule);width:200px}
+.spec td:last-child{width:42%}
+.spec td:last-child:empty::before{content:'— no evidence';color:#6f7d6a}
+.spec a{display:inline-block;margin:2px 8px 2px 0;padding:4px 10px;border:1px solid var(--green);color:var(--green);
+  font-size:15px;text-decoration:none;transition:background .15s,color .15s}
+.spec a:hover{background:var(--green);color:var(--bg)}
+
+@media(max-width:700px){
+  .spec thead{display:none}
+  .spec,.spec tbody,.spec tr,.spec th,.spec td{display:block;width:auto!important}
+  .spec tbody th{border-right:0;background:#111511}
+  .spec td:first-child{padding-bottom:4px;border-bottom:0}
+}

@@ -1,0 +1,27 @@
+/* Experience — signal blue field, heavy sans, a single timeline rail. */
+:root{
+  color-scheme:dark;
+  --bg:#182bff;--fg:#ffffff;--muted:#d5d9ff;--rule:#5a68ff;--hit:#a3ff77;
+  --mono:ui-monospace,Consolas,"Courier New",monospace;
+  --edge:48px;--focus:#ffffff;
+}
+@media(max-width:600px){:root{--edge:20px}}
+
+.bar{border-bottom:1px solid var(--rule)}
+main{padding:0 var(--edge) 120px}
+h1{margin:64px 0 72px;font:800 clamp(40px,10.5vw,152px)/.88 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-.045em;text-transform:uppercase}
+
+.log{list-style:none;margin:0;padding:0;border-top:2px solid var(--fg)}
+.log li{display:grid;grid-template-columns:240px minmax(0,1fr);gap:32px;padding:32px 0;border-bottom:1px solid var(--rule);scroll-margin-top:32px;position:relative}
+.log time{font:500 15px/1.5 var(--mono);letter-spacing:.02em;padding-left:24px;position:relative}
+.log time::before{content:'';position:absolute;left:0;top:.45em;width:11px;height:11px;background:var(--fg)}
+.log h2{margin:0;font:700 clamp(26px,3vw,40px)/1.1 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-.02em}
+.role{margin:8px 0 20px;color:var(--muted)}
+.log dl{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 16px;margin:0;max-width:720px}
+.log dt{font:500 14px/1.7 var(--mono);color:var(--muted)}
+.log dd{margin:0}
+
+.log li:target time::before{background:var(--hit)}
+.log li:target h2{text-decoration:underline;text-decoration-color:var(--hit);text-decoration-thickness:3px;text-underline-offset:6px}
+
+@media(max-width:760px){.log li{grid-template-columns:minmax(0,1fr);gap:12px}}

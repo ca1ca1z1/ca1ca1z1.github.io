@@ -1,0 +1,22 @@
+/* Shared structure for every page. Colours and type belong to each page's own stylesheet.
+   Readability floor: no text below 14px; body copy 17px. Enforced by tests/site.test.cjs. */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:96px}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 17px/1.6 var(--body,"Helvetica Neue",Helvetica,Arial,sans-serif);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--focus,currentColor);outline-offset:3px}
+[hidden]{display:none!important}
+img{max-width:100%;display:block}
+
+/* Page bar: back to index · current page · next page. */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px var(--edge,48px);
+  font:500 14px/1.4 var(--bar-font,ui-monospace,Consolas,"Courier New",monospace);letter-spacing:.04em}
+.bar a{text-decoration:none;padding:6px 0;border-bottom:1px solid transparent}
+.bar a:hover{border-bottom-color:currentColor}
+.bar .here{opacity:.75}
+
+.skip{position:absolute;left:-9999px}
+.skip:focus{left:16px;top:16px;z-index:100;padding:8px 12px;background:var(--fg);color:var(--bg)}
+
+@media(max-width:600px){.bar{--edge:20px}.bar .here{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
