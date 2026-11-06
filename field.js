@@ -7,7 +7,10 @@
    - click / tap / keyboard focus: a ring wave expands by Manhattan distance (the entrance's corner wave)
    - wheel: the lattice rolls one whole cell per notch and a streak runs down the pointer's column
    - idle: sparse single-cell flickers
-   Pure canvas, no dependencies. Sleeps when nothing moves; off under prefers-reduced-motion. */
+   Two tiers. Full: everything above. Reduced (prefers-reduced-motion): only feedback that answers
+   the pointer directly and stays small — lens, guides, readout, selection rails — placed instantly,
+   without easing; no trail, waves, roll, idle flicker or intro fade.
+   Pure canvas, no dependencies. Sleeps when nothing moves. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.PortfolioField = factory();
@@ -60,7 +63,8 @@
   const rails = {l: 0, r: 0, tl: 0, tr: 0, a: 0, ta: 0, el: null};
 
   const entering = () => document.body.classList.contains('is-entering');
-  const live = () => !reduce.matches && !document.hidden && !entering();
+  const active = () => !document.hidden && !entering();   // both tiers
+  const live = () => active() && !reduce.matches;         // full tier only
 
   function resize() {
     const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -134,18 +138,20 @@
 
   function frame(now) {
     raf = 0;
-    if (intro < 1) intro = out((now - introStart) / 900);
-    oy = approach(oy, target, .22);
-    if (lens.placed) { lens.x = approach(lens.x, lens.tx, .28); lens.y = approach(lens.y, lens.ty, .28); }
-    lens.a = approach(lens.a, lens.ta, .14, .01);
-    rails.l = approach(rails.l, rails.tl, .3); rails.r = approach(rails.r, rails.tr, .3);
-    rails.a = approach(rails.a, rails.ta, .18, .01);
+    // Reduced tier: every value lands on its goal in one frame (rate 1), so nothing glides.
+    const k = rate => reduce.matches ? 1 : rate;
+    if (intro < 1) intro = reduce.matches ? 1 : out((now - introStart) / 900);
+    oy = approach(oy, target, k(.22));
+    if (lens.placed) { lens.x = approach(lens.x, lens.tx, k(.28)); lens.y = approach(lens.y, lens.ty, k(.28)); }
+    lens.a = approach(lens.a, lens.ta, k(.14), .01);
+    rails.l = approach(rails.l, rails.tl, k(.3)); rails.r = approach(rails.r, rails.tr, k(.3));
+    rails.a = approach(rails.a, rails.ta, k(.18), .01);
     draw(now);
     const moving = oy !== target || lens.x !== lens.tx || lens.y !== lens.ty || lens.a !== lens.ta ||
       rails.l !== rails.tl || rails.r !== rails.tr || rails.a !== rails.ta;
     if (pulses.length || moving || intro < 1) raf = requestAnimationFrame(frame);
   }
-  const wake = () => { if (!raf && !reduce.matches) raf = requestAnimationFrame(frame); };
+  const wake = () => { if (!raf) raf = requestAnimationFrame(frame); };
 
   function lensTo(x, y) {
     const {c, r} = cellAt(x, y, ox, oy);
@@ -173,12 +179,12 @@
 
   addEventListener('pointermove', e => {
     pointer.x = e.clientX; pointer.y = e.clientY; pointer.inside = e.pointerType === 'mouse' || e.pointerType === 'pen';
-    if (!live()) return;
+    if (!active()) return;
     if (pointer.inside) lensTo(e.clientX, e.clientY);
     const {c, r} = cellAt(e.clientX, e.clientY, ox, oy);
     if (c !== pointer.c || r !== pointer.r) {
       pointer.c = c; pointer.r = r; lastInput = performance.now();
-      pulse(c, r, 0, .12, 1000, false);
+      if (live()) pulse(c, r, 0, .12, 1000, false);   // trail: full tier only
     }
     wake();
   }, {passive: true});
@@ -204,12 +210,12 @@
     wake();
   }, {passive: true});
 
-  // Index selection: hover and keyboard focus share one response.
+  // Index selection (both tiers): hover and keyboard focus share one response.
   const tiles = document.querySelectorAll('.index a');
   tiles.forEach(el => {
-    el.addEventListener('pointerenter', () => { if (live()) { railsTo(el); wake(); } });
+    el.addEventListener('pointerenter', () => { if (active()) { railsTo(el); wake(); } });
     el.addEventListener('pointerleave', () => { railsOff(el); wake(); });
-    el.addEventListener('focus', () => { if (live() && el.matches(':focus-visible')) { railsTo(el); wake(); } });
+    el.addEventListener('focus', () => { if (active() && el.matches(':focus-visible')) { railsTo(el); wake(); } });
     el.addEventListener('blur', () => { railsOff(el); wake(); });
   });
   addEventListener('scroll', () => { if (rails.el) { railsTo(rails.el, true); wake(); } }, {passive: true});
@@ -239,7 +245,8 @@
   observer.observe(document.body, {attributes: true, attributeFilter: ['class']});
   addEventListener('resize', resize);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });
-  reduce.addEventListener?.('change', () => { pulses = []; lens.a = lens.ta = rails.a = rails.ta = 0; draw(performance.now()); });
+  // Switching tiers mid-visit: drop pulses, settle the roll, keep lens and rails where they are.
+  reduce.addEventListener?.('change', () => { pulses = []; oy = target; intro = 1; wake(); });
   // entrance.js runs first (both deferred); if it is playing, wait for it to finish.
   start();
   return api;

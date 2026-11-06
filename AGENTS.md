@@ -9,7 +9,9 @@ The site's signature, set by the entrance, is front-end animation written entire
 - Keep it in the entrance's language: the 31px cell grid, tiles opening from their vertical centreline, waves stepping by Manhattan distance, whole-cell jumps, flashes on a beat.
 - Animation never costs readability or access:
   - motion behind text stays low-contrast; text sits on solid or near-solid surfaces;
-  - honour `prefers-reduced-motion` (static or off);
+  - two tiers under `prefers-reduced-motion`. Many office, VDI and VM machines report `reduce` by default, so do not simply switch everything off:
+    - **full** (no preference): everything;
+    - **reduced** (`reduce`): keep only small feedback that answers the pointer or keyboard directly (highlights, readouts, selection markers, state changes), placed instantly with no easing or travel. Drop autonomous motion (idle loops, intro fades), large or travelling motion (waves, trails, rolls, sweeps) and CSS transitions;
   - keyboard input gets the same feedback as pointer input; touch works like mouse;
   - never block navigation, scrolling or clicks (`pointer-events:none`, passive listeners).
 - Performance: drive time from `requestAnimationFrame` timestamps, stop the loop when nothing moves, pause when the tab is hidden, cap device pixel ratio at 2, bound particle/pulse counts.
@@ -20,7 +22,8 @@ The site's signature, set by the entrance, is front-end animation written entire
 
 ## Structure
 - `index.html` + `home.css` — home. Its only job: a short description and links to the pages. Keep the entrance hooks (`.entrance`, `.entrance-canvas`, `.shell`, `#main`).
-- `field.js` — home background: interactive cell lattice (pointer, click, wheel, focus, idle). Starts after the entrance ends.
+- `field.js` — home background: interactive cell lattice (pointer lens, selection rails, click, wheel, focus, idle). Starts after the entrance ends. Implements both motion tiers.
+- `tools/stamp.cjs` — writes content-hash `?v=` versions onto asset references.
 - `work/`, `experience/`, `capability/`, `record/` — one page each, each with its **own visual style** in its own stylesheet. Do not unify them.
   - Work: exhibition catalogue (paper, serif). Experience: signal-blue timeline. Capability: green instrument readout on graph paper. Record: typewriter document on archival paper.
 - `assets/base.css` — shared structure only (reset, page bar, focus, skip link). No page colours here; pages set `--bg`, `--fg`, `--focus`, `--edge`.
@@ -37,10 +40,14 @@ The site's signature, set by the entrance, is front-end animation written entire
 - No text below 14px; body copy 17px. Keep text/background contrast at WCAG AA or better.
 - Pages work at 375px width without horizontal scrolling.
 
+## Caching
+GitHub Pages caches assets for 10 minutes. Every local `.css`/`.js` reference in a page carries `?v=<content hash>`; never edit these by hand. After changing any asset run `node tools/stamp.cjs`. `tests/site.test.cjs` fails if a version is stale.
+
 ## Checks
 Run before committing:
 
 ```
+node tools/stamp.cjs
 node tests/entrance.test.cjs
 node tests/field.test.cjs
 node tests/site.test.cjs
