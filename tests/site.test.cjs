@@ -39,6 +39,14 @@ for (const page of PAGES) {
   }
 }
 
+// Cache-busting: every local CSS/JS reference carries ?v=<content hash> (run `node tools/stamp.cjs`).
+const stamper = require('../tools/stamp.cjs');
+for (const page of stamper.PAGES) {
+  if (!fs.existsSync(path.join(root, page))) continue;
+  const html = read(page);
+  assert.strictEqual(stamper.stamp(page, html), html, page + ': stale ?v= on an asset — run `node tools/stamp.cjs`');
+}
+
 // Evidence codes: sequential, unique.
 function codes(file, prefix) {
   const list = [...read(file).matchAll(new RegExp('id="(' + prefix + '-(\\d\\d))"', 'g'))].map(m => Number(m[2]));
