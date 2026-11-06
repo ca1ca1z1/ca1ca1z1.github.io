@@ -32,12 +32,28 @@ main:focus{outline:none}
 .index a{position:relative;isolation:isolate;display:grid;grid-template-rows:auto 1fr auto auto;gap:8px;
   min-height:clamp(220px,34vh,340px);padding:20px;border-right:1px solid var(--rule);text-decoration:none;overflow:hidden}
 .index a:last-child{border-right:0}
-.index a::before{content:'';position:absolute;inset:0;z-index:-1;background:var(--fg);
-  transform:scaleY(0);transform-origin:bottom;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
-.index a::after{content:'';position:absolute;top:22px;right:20px;width:14px;height:14px;background:var(--swatch);outline:1px solid var(--rule)}
-.index a:hover::before,.index a:focus-visible::before{transform:scaleY(1)}
-.index a:hover,.index a:focus-visible{color:var(--bg)}
-.index a:focus-visible{outline-offset:-4px}
+.sw{position:absolute;top:22px;right:20px;width:14px;height:14px;background:var(--swatch);outline:1px solid var(--rule);
+  transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+
+/* Selection (hover = keyboard focus). Five strips rise right-to-left like the entrance's closing
+   columns; orange corner brackets close in; an arrow slides out of the title. */
+.fx{position:absolute;inset:0;z-index:-1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.fx b{margin-right:-1px;background:var(--fg);transform:scaleY(0);transform-origin:bottom;transition:transform .2s ease-in}
+.fx b:nth-child(1){--i:4}.fx b:nth-child(2){--i:3}.fx b:nth-child(3){--i:2}.fx b:nth-child(4){--i:1}.fx b:nth-child(5){--i:0}
+.index a::before{content:'';position:absolute;inset:-6px;z-index:1;pointer-events:none;opacity:0;
+  --o:linear-gradient(var(--orange),var(--orange));
+  background:var(--o) top left/16px 2px,var(--o) top left/2px 16px,var(--o) top right/16px 2px,var(--o) top right/2px 16px,
+    var(--o) bottom left/16px 2px,var(--o) bottom left/2px 16px,var(--o) bottom right/16px 2px,var(--o) bottom right/2px 16px;
+  background-repeat:no-repeat;transition:inset .3s cubic-bezier(.2,.7,.2,1),opacity .2s}
+.index a::after{content:'→';position:absolute;right:34px;bottom:24px;font:600 24px/1 "Helvetica Neue",Helvetica,Arial,sans-serif;
+  opacity:0;transform:translateX(-12px);transition:opacity .2s,transform .35s cubic-bezier(.2,.7,.2,1)}
+
+.index a:is(:hover,:focus-visible){color:var(--bg)}
+.index a:is(:hover,:focus-visible) .fx b{transform:scaleY(1);transition:transform .42s cubic-bezier(.2,.7,.2,1) calc(var(--i) * 45ms)}
+.index a:is(:hover,:focus-visible)::before{inset:8px;opacity:1;transition-delay:.18s}
+.index a:is(:hover,:focus-visible)::after{opacity:1;transform:none;transition-delay:.2s}
+.index a:is(:hover,:focus-visible) .sw{transform:rotate(45deg) scale(.8)}
+.index a:focus-visible{outline:none}
 .n{font:700 14px/1 var(--mono);color:var(--muted);transition:color .2s}
 .index strong{align-self:end;font:600 clamp(28px,3vw,40px)/1 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-.02em}
 .d{font-size:16px;color:var(--muted);transition:color .2s}
@@ -57,5 +73,5 @@ main:focus{outline:none}
   .index a:last-child{border-bottom:0}
   .index a .n{grid-row:1/4}
   .index strong{align-self:start}
-  .index a::after{top:24px}
+  .sw{top:24px}
 }

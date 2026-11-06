@@ -1,7 +1,18 @@
 // Home background geometry: ring wave ordering and pointer → cell mapping.
 const assert = require('assert');
 const field = require('../field.js');
-const {ring, cellAt, CELL} = field;
+const {ring, cellAt, lensAt, approach, CELL, LENS} = field;
+
+// Lens: full at centre, zero at and beyond the rim, monotonic falloff.
+assert.strictEqual(lensAt(0), 1);
+assert.strictEqual(lensAt(LENS), 0);
+assert.strictEqual(lensAt(LENS * 2), 0);
+for (let d = 1; d <= LENS; d += 7) assert(lensAt(d) <= lensAt(d - 1), 'lens falls off');
+// Easing settles exactly instead of drifting forever.
+let v = 0, steps = 0;
+while (v !== 100 && steps < 200) { v = approach(v, 100, .28); steps++; }
+assert.strictEqual(v, 100, 'approach reaches its goal');
+assert(steps < 40, 'approach settles quickly');
 
 for (const R of [0, 1, 3, 7]) {
   const cells = ring(5, -2, R);
