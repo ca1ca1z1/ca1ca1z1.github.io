@@ -2,8 +2,25 @@
 
 Static GitHub Pages site, published from the repository root. No build step, no dependencies, no network resources.
 
+## Identity: animation in pure code
+The site's signature, set by the entrance, is front-end animation written entirely in code.
+- Build motion with Canvas 2D, CSS and plain JavaScript only. No video, GIF, Lottie, animation or WebGL libraries, and no pre-rendered frames.
+- Prefer **interactive** animation. Backgrounds may respond to what the visitor does: pointer movement, click/tap, wheel, scroll, keyboard focus. Each input should produce a distinct, legible response.
+- Keep it in the entrance's language: the 31px cell grid, tiles opening from their vertical centreline, waves stepping by Manhattan distance, whole-cell jumps, flashes on a beat.
+- Animation never costs readability or access:
+  - motion behind text stays low-contrast; text sits on solid or near-solid surfaces;
+  - honour `prefers-reduced-motion` (static or off);
+  - keyboard input gets the same feedback as pointer input; touch works like mouse;
+  - never block navigation, scrolling or clicks (`pointer-events:none`, passive listeners).
+- Performance: drive time from `requestAnimationFrame` timestamps, stop the loop when nothing moves, pause when the tab is hidden, cap device pixel ratio at 2, bound particle/pulse counts.
+- Keep animation logic testable: export pure geometry/timing functions (UMD pattern as in `entrance-scene.js`, `field.js`) and cover them in `tests/`.
+
+## Palette
+`#101010` black · `#f3f3ed` off-white · `#182bff` blue · `#a3ff77` green · `#ff5a1f` orange (interaction: pointer/click feedback, focus, selection). Pages may add their own colours; these five are the site's signature.
+
 ## Structure
 - `index.html` + `home.css` — home. Its only job: a short description and links to the pages. Keep the entrance hooks (`.entrance`, `.entrance-canvas`, `.shell`, `#main`).
+- `field.js` — home background: interactive cell lattice (pointer, click, wheel, focus, idle). Starts after the entrance ends.
 - `work/`, `experience/`, `capability/`, `record/` — one page each, each with its **own visual style** in its own stylesheet. Do not unify them.
   - Work: exhibition catalogue (paper, serif). Experience: signal-blue timeline. Capability: green instrument readout on graph paper. Record: typewriter document on archival paper.
 - `assets/base.css` — shared structure only (reset, page bar, focus, skip link). No page colours here; pages set `--bg`, `--fg`, `--focus`, `--edge`.
@@ -25,5 +42,6 @@ Run before committing:
 
 ```
 node tests/entrance.test.cjs
+node tests/field.test.cjs
 node tests/site.test.cjs
 ```
