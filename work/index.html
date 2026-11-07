@@ -5,18 +5,39 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Work · Yuning Cai</title>
 <link rel="stylesheet" href="../assets/base.css?v=72b8038c">
-<link rel="stylesheet" href="./work.css?v=6a6bc48d">
+<link rel="stylesheet" href="./work.css?v=0aa3eee5">
+<!-- Opening plays only in the full motion tier; set before first paint so content never flashes. -->
+<script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('is-intro')</script>
+<script src="./work.js?v=243bff8d" defer></script>
 </head>
 <body>
+<canvas class="field" aria-hidden="true"></canvas>
+<canvas class="marks" aria-hidden="true"></canvas>
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar"><a href="../">← Index</a><span class="here">01 / Work</span><a href="../experience/">Experience →</a></header>
 
 <main id="main">
-  <h1>Work <sup>04</sup></h1>
+  <!-- Evidence board after an event PV: cold haze, giant ghost grotesk, an acrostic index, pinned
+       cards, signal-red marks. Motion and the tracking reticle: work.js. -->
+  <p class="ghost" aria-hidden="true">WORK</p>
+  <header class="head">
+    <h1>Work</h1>
+  </header>
+
+  <!-- Acrostic index: each title sits on a shared spine so that one letter of each lines up;
+       read down, the red letters spell data-word. Keep each row's pre + key + post equal to its
+       card's title (tests/work.test.cjs checks this). -->
+  <nav class="acro" aria-label="Projects" data-word="MADE">
+    <a class="row" href="#P-01" style="--o:2"><span class="pre">Seismic </span><span class="key">M</span><span class="post">odel Generalization</span></a>
+    <a class="row" href="#P-02" style="--o:0"><span class="pre">HR Reporting </span><span class="key">A</span><span class="post">utomation</span></a>
+    <a class="row" href="#P-03" style="--o:3"><span class="pre">Accessible Route </span><span class="key">D</span><span class="post">esign</span></a>
+    <a class="row" href="#P-04" style="--o:1"><span class="pre">Untitl</span><span class="key">e</span><span class="post">d</span></a>
+  </nav>
 
   <!-- Catalogue. One <article> per entry; id = evidence code. Figure: replace .plate with an <img>. -->
   <div class="catalogue">
-    <article id="P-01">
+    <article id="P-01" tabindex="0" style="--i:0;--rot:-1.4deg">
+      <i class="tape" aria-hidden="true"></i>
       <div class="plate" role="img" aria-label="Image placeholder"></div>
       <p class="meta"><span>P-01</span><span>Research</span><span>2024</span></p>
       <h2>Seismic Model Generalization</h2>
@@ -27,7 +48,8 @@
         <dt>Stack</dt><dd>Python, scikit-learn, pandas, NumPy</dd>
       </dl>
     </article>
-    <article id="P-02">
+    <article id="P-02" tabindex="0" style="--i:1;--rot:1.1deg">
+      <i class="tape" aria-hidden="true"></i>
       <div class="plate" role="img" aria-label="Image placeholder"></div>
       <p class="meta"><span>P-02</span><span>Industry</span><span>2026</span></p>
       <h2>HR Reporting Automation</h2>
@@ -38,7 +60,8 @@
         <dt>Stack</dt><dd>Dify, Python, MySQL, Excel, VLM</dd>
       </dl>
     </article>
-    <article id="P-03">
+    <article id="P-03" tabindex="0" style="--i:2;--rot:.8deg">
+      <i class="tape" aria-hidden="true"></i>
       <div class="plate" role="img" aria-label="Image placeholder"></div>
       <p class="meta"><span>P-03</span><span>Design</span><span>2025</span></p>
       <h2>Accessible Route Design</h2>
@@ -49,7 +72,8 @@
         <dt>Stack</dt><dd>—</dd>
       </dl>
     </article>
-    <article id="P-04">
+    <article id="P-04" tabindex="0" style="--i:3;--rot:-.9deg">
+      <i class="tape" aria-hidden="true"></i>
       <div class="plate" role="img" aria-label="Image placeholder"></div>
       <p class="meta"><span>P-04</span><span>—</span><span>—</span></p>
       <h2>Untitled</h2>
