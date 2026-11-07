@@ -15,7 +15,11 @@ The site's signature, set by the entrance, is front-end animation written entire
     - **reduced** (`reduce`): keep only small feedback that answers the pointer or keyboard directly (highlights, readouts, selection markers, state changes), placed instantly with no easing or travel. Drop autonomous motion (idle loops, intro fades), large or travelling motion (waves, trails, rolls, sweeps) and CSS transitions;
   - keyboard input gets the same feedback as pointer input; touch works like mouse;
   - never block navigation, scrolling or clicks (`pointer-events:none`, passive listeners).
-- Performance: drive time from `requestAnimationFrame` timestamps, stop the loop when nothing moves, pause when the tab is hidden, cap device pixel ratio at 2, bound particle/pulse counts.
+- Performance: drive time from `requestAnimationFrame` timestamps, stop the loop when nothing moves, pause when the tab is hidden, cap device pixel ratio at 2, bound particle/pulse counts. Also:
+  - one `requestAnimationFrame` per frame for all inputs (inputs only mark what changed); redraw a layer only when its inputs changed (e.g. a scroll-only background never redraws on pointer moves);
+  - the pointer marker follows the pointer exactly — no easing on the cursor itself;
+  - no `background-attachment: fixed` (put fixed backgrounds on a `position:fixed` layer); no CSS `filter: blur()` that changes per frame, and no canvas `filter` per frame — blur once into a sprite or a composited layer and only move it;
+  - in scroll handlers, read all layout first, then write (never interleave reads and writes).
 - Keep animation logic testable: export pure geometry/timing functions (UMD pattern as in `entrance-scene.js`, `field.js`) and cover them in `tests/`.
 
 ## Palette
