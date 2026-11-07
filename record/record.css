@@ -70,11 +70,11 @@ h2 .k{font:700 14px/1 var(--mono);color:var(--acid)}
 .log li::after{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--orange);transform:scaleY(0);transition:transform .22s cubic-bezier(.2,.8,.2,1)}
 .log li:focus{outline:none}
 .log li:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
-.log li:hover,.log li:focus-within{color:var(--paper)}
-.log li:hover::before,.log li:focus-within::before,.log li:hover::after,.log li:focus-within::after{transform:none}
-.log li:hover time,.log li:focus-within time{color:var(--acid)}
-.log li:hover .kind,.log li:focus-within .kind{color:var(--dim)}
-.log li:hover .no::after,.log li:focus-within .no::after{background:var(--paper)}
+.log li:hover,.log li:is(:focus-visible,:has(:focus-visible)){color:var(--paper)}
+.log li:hover::before,.log li:is(:focus-visible,:has(:focus-visible))::before,.log li:hover::after,.log li:is(:focus-visible,:has(:focus-visible))::after{transform:none}
+.log li:hover time,.log li:is(:focus-visible,:has(:focus-visible)) time{color:var(--acid)}
+.log li:hover .kind,.log li:is(:focus-visible,:has(:focus-visible)) .kind{color:var(--dim)}
+.log li:hover .no::after,.log li:is(:focus-visible,:has(:focus-visible)) .no::after{background:var(--paper)}
 
 .no{font:700 32px/1 var(--sans);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .body{min-width:0}
