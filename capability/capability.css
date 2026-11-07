@@ -1,36 +1,123 @@
-/* Capability — instrument readout: graph-paper black, phosphor green, monospace throughout. */
+/* Capability — a tactical terminal after an event PV: phosphor green (the site's #a3ff77) on
+   near-black, a fine aperture-grille texture, a HUD frame in the side margins (tick ruler, status
+   boxes), skills as modules in domain columns with slatted bands. Motion: capability.js. */
 :root{
   color-scheme:dark;
-  --bg:#0b0d0b;--fg:#e8efe4;--green:#a3ff77;--muted:#9fae99;--rule:#2b332a;--grid:#151a15;
+  --bg:#0b0d0b;--fg:#e8efe4;--green:#a3ff77;--muted:#9fae99;--dim:#5f6d59;--rule:#25301f;--panel:rgb(11 14 11 / .94);
+  --glow:0 0 14px rgb(163 255 119 / .35);
   --mono:ui-monospace,Consolas,"Courier New",monospace;
   --edge:48px;--focus:var(--green);--body:var(--mono);
 }
 @media(max-width:600px){:root{--edge:20px}}
 
-/* Graph paper on its own fixed layer (a background-attachment: fixed grid repainted the whole screen
-   on every scroll step). */
+/* Screen texture on its own fixed layer (painted once): aperture-grille lines and a soft vignette. */
 body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;will-change:transform;
-  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px}
+  background:repeating-linear-gradient(90deg,rgb(163 255 119 / .035) 0 1px,transparent 1px 3px),
+    radial-gradient(120% 90% at 50% 40%,transparent 55%,rgb(0 0 0 / .55) 100%)}
+.field,.marks,.veil{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+.field{z-index:0}
+.marks{z-index:15}   /* click pings sit above the modules, so every click answers */
+.veil{z-index:30}
+.bar,main{position:relative;z-index:1}
 .bar{border-bottom:1px solid var(--rule);color:var(--green)}
-main{padding:0 var(--edge) 120px;max-width:1200px}
-h1{margin:72px 0 56px;font:400 clamp(40px,6vw,80px)/1 var(--mono);letter-spacing:-.02em}
-h1 span:first-child{color:var(--green)}
-.cursor{color:var(--green);animation:blink 1s steps(1,end) infinite}
+main{max-width:1200px;margin:0 auto;padding:0 var(--edge) 140px}
+main:focus{outline:none}
+
+/* HUD (decoration). Ruler: ticks every 8px, a long one every 40px; it slides with the scroll
+   (capability.js sets --sy) under a fixed mark. Status: real counts plus the scroll readout. */
+.hud{position:fixed;inset:0;z-index:2;pointer-events:none;font:400 14px/1 var(--mono);color:var(--green)}
+.ruler{position:absolute;left:14px;top:76px;bottom:24px;width:22px;border-left:1px solid rgb(163 255 119 / .7);transform-origin:top;
+  background-image:linear-gradient(rgb(163 255 119 / .9) 0 1px,transparent 1px),linear-gradient(rgb(163 255 119 / .5) 0 1px,transparent 1px);
+  background-repeat:repeat-y;background-size:16px 40px,8px 8px;background-position:0 calc(var(--sy,0px) * -1),0 calc(var(--sy,0px) * -1)}
+.ruler-mark{position:absolute;left:-1px;top:50%;width:22px;height:2px;background:var(--green);box-shadow:var(--glow)}
+.status{position:absolute;right:20px;top:96px;display:grid;gap:12px;width:150px}
+.status p{display:flex;justify-content:space-between;margin:0;padding:6px 8px;border:1px solid rgb(163 255 119 / .55);background:rgb(11 14 11 / .8)}
+.status span{color:var(--muted)}
+@media(max-width:1560px){.status{display:none}}
+@media(max-width:760px){.ruler{display:none}}
+
+/* Title: a prompt, the word typed, a block cursor. */
+.head{padding:72px 0 48px}
+.head h1{display:flex;align-items:baseline;gap:.4ch;margin:0;font:400 clamp(40px,6vw,80px)/1 var(--mono);letter-spacing:-.02em;text-shadow:var(--glow)}
+.prompt{color:var(--green)}
+.type{display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom}
+.cursor{display:inline-block;width:.55em;height:.9em;background:var(--green);box-shadow:var(--glow);align-self:center}
+
+/* Bank: one slatted band per domain (the PV's tile columns), modules stacked in it. */
+.bank{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.dom{position:relative;padding:18px 16px 22px;border-inline:1px solid rgb(163 255 119 / .4);
+  background:repeating-linear-gradient(90deg,rgb(163 255 119 / .05) 0 1px,transparent 1px 6px)}
+.dom h2{display:flex;align-items:center;gap:12px;margin:0 0 18px;font:700 15px/1.4 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--green)}
+.tag{padding:2px 6px;background:var(--green);color:var(--bg);font-size:14px;letter-spacing:.04em}
+.dom ul{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+
+.mod{position:relative;isolation:isolate;padding:16px 16px 18px;border:1px solid rgb(163 255 119 / .5);background:var(--panel);
+  transition:color .15s,background .15s}
+/* Crosshair marks at two corners (the PV's "+"). */
+.mod::before{content:'';position:absolute;inset:-6px;pointer-events:none;
+  --g:linear-gradient(var(--green),var(--green));
+  background:var(--g) 0 5px/11px 1px,var(--g) 5px 0/1px 11px,var(--g) 100% calc(100% - 5px)/11px 1px,var(--g) calc(100% - 5px) 100%/1px 11px;
+  background-repeat:no-repeat}
+/* Label bar along the foot (the PV's "DEFENCE" bars); it fills on selection. */
+.mod::after{content:'';position:absolute;left:16px;right:16px;bottom:6px;height:3px;background:var(--green);opacity:.25;transform:scaleX(.18);transform-origin:left;transition:transform .25s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.mod h3{margin:0 0 12px;font:700 17px/1.35 var(--mono);color:var(--fg)}
+.ev{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.chip{display:inline-block;padding:3px 10px;border:1px solid var(--green);color:var(--green);font:400 14px/1.4 var(--mono);letter-spacing:.04em;text-decoration:none}
+.chip.none{border-style:dashed;border-color:var(--dim);color:var(--muted);text-transform:lowercase}
+a.chip:hover{background:var(--green);color:var(--bg)}
+.mod:focus{outline:none}
+.mod:focus-visible{outline:2px solid var(--green);outline-offset:5px}
+/* Selection (hover or visible keyboard focus): the module lights up in phosphor, type reverses. */
+.mod:is(:hover,:focus-visible,:has(:focus-visible)){background:var(--green);color:var(--bg)}
+.mod:is(:hover,:focus-visible,:has(:focus-visible)) h3{color:var(--bg)}
+.mod:is(:hover,:focus-visible,:has(:focus-visible)) .chip{border-color:var(--bg);color:var(--bg)}
+.mod:is(:hover,:focus-visible,:has(:focus-visible)) .chip.none{color:#24301f}
+.mod:is(:hover,:focus-visible,:has(:focus-visible)) a.chip:hover{background:var(--bg);color:var(--green)}
+.mod:is(:hover,:focus-visible,:has(:focus-visible))::after{background:var(--bg);opacity:.85;transform:none}
+
+@media(max-width:900px){.bank{grid-template-columns:minmax(0,1fr)}}
+
+/* Cross-reference: evidence code, a circuit wire, the skills it supports (the PV's DEFENCE ■ —
+   ATTACKER pairings). Pointing at a code lights every module above that cites it (capability.js). */
+.xref{margin-top:96px}
+.xref h2{display:flex;align-items:center;gap:12px;margin:0 0 22px;font:700 15px/1.4 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--green)}
+.xref ol{list-style:none;margin:0;padding:0;display:grid;gap:18px}
+.link{display:grid;grid-template-columns:auto minmax(48px,160px) minmax(0,1fr);align-items:center;gap:0 14px}
+.code{padding:6px 12px;border:1px solid var(--green);color:var(--green);font:700 15px/1.2 var(--mono);text-decoration:none;background:var(--panel);box-shadow:var(--glow)}
+.code:hover,.code:focus-visible{background:var(--green);color:var(--bg);outline:none}
+.wire{position:relative;height:1px;background:rgb(163 255 119 / .55);transform-origin:left}
+.wire::before,.wire::after{content:'';position:absolute;top:-3px;width:7px;height:7px;background:var(--green)}
+.wire::before{left:-4px}.wire::after{right:-4px}
+.to{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.to li{padding:4px 10px;border:1px solid rgb(163 255 119 / .35);background:var(--panel);font-size:15px;color:var(--fg)}
+.mod.is-cited{outline:2px solid var(--green);outline-offset:5px}
+@media(max-width:600px){.link{grid-template-columns:auto minmax(24px,1fr);row-gap:10px}.to{grid-column:1/-1}}
+/* Scroll: each row's wire draws in, and its skills switch on, as it enters. */
+.scan .link:not(.on) .wire{transform:scaleX(0)}
+.scan .link:not(.on) .to{opacity:0}
+.scan .link.on .wire{animation:wire .35s cubic-bezier(.2,.8,.2,1) both}
+.scan .link.on .to{animation:mod-on .24s steps(1,end) .25s both}
+@keyframes wire{from{transform:scaleX(0)}to{transform:none}}
+
+/* Scroll: columns boot in as they enter (capability.js adds .scan to <html> and .on to each
+   column; without the script nothing is hidden). A bright scan line runs down the column. */
+.scan .dom:not(.on){clip-path:inset(0 0 100% 0)}
+.scan .dom.on{animation:col-scan .45s cubic-bezier(.2,.8,.2,1) var(--d,0s) both}
+.scan .dom.on .mod{animation:mod-on .24s steps(1,end) calc(var(--d,0s) + .2s + var(--i,0) * 60ms) both}
+.dom li:nth-child(1){--i:0}.dom li:nth-child(2){--i:1}.dom li:nth-child(3){--i:2}.dom li:nth-child(4){--i:3}
+@keyframes col-scan{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 -20px 0)}}
+@keyframes mod-on{0%{opacity:0}33%{opacity:1}66%{opacity:.3}100%{opacity:1}}
+
+/* Opening (full motion tier; capability.js ends it at 1.7 s). The canvas veil powers the CRT on;
+   then the ruler draws down, the status boxes flicker on, the word types itself behind the cursor,
+   circuit traces run to each column (canvas), and the columns scan in on a beat. */
+.is-intro .veil{background:#000;animation:veil-off 0s 2s forwards}
+@keyframes veil-off{to{background:transparent}}
+.is-intro .ruler{animation:ruler-in .4s cubic-bezier(.2,.8,.2,1) .3s both}
+@keyframes ruler-in{from{transform:scaleY(0)}to{transform:none}}
+.is-intro .status p{animation:mod-on .24s steps(1,end) calc(.38s + var(--k,0) * 80ms) both}
+.status p:nth-child(2){--k:1}.status p:nth-child(3){--k:2}.status p:nth-child(4){--k:3}
+.is-intro .type{animation:type .5s steps(10,end) .45s both}
+@keyframes type{from{width:0}to{width:10ch}}
+.is-intro .cursor{animation:blink .16s steps(1,end) .3s 6 both}
 @keyframes blink{50%{opacity:0}}
-
-.spec{width:100%;border-collapse:collapse;border:1px solid var(--rule);background:var(--bg)}
-.spec th,.spec td{text-align:left;vertical-align:baseline;padding:16px 20px;border-bottom:1px solid var(--rule);font-weight:400}
-.spec thead th{font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:#111511}
-.spec tbody th{font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border-right:1px solid var(--rule);width:200px}
-.spec td:last-child{width:42%}
-.spec td:last-child:empty::before{content:'— no evidence';color:#6f7d6a}
-.spec a{display:inline-block;margin:2px 8px 2px 0;padding:4px 10px;border:1px solid var(--green);color:var(--green);
-  font-size:15px;text-decoration:none;transition:background .15s,color .15s}
-.spec a:hover{background:var(--green);color:var(--bg)}
-
-@media(max-width:700px){
-  .spec thead{display:none}
-  .spec,.spec tbody,.spec tr,.spec th,.spec td{display:block;width:auto!important}
-  .spec tbody th{border-right:0;background:#111511}
-  .spec td:first-child{padding-bottom:4px;border-bottom:0}
-}

@@ -5,28 +5,75 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Capability · Yuning Cai</title>
 <link rel="stylesheet" href="../assets/base.css?v=72b8038c">
-<link rel="stylesheet" href="./capability.css?v=f8b3bb52">
+<link rel="stylesheet" href="./capability.css?v=f4cb99e9">
+<!-- Opening plays only in the full motion tier; set before first paint so content never flashes. -->
+<script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('is-intro')</script>
+<script src="./capability.js?v=6ef58067" defer></script>
 </head>
 <body>
+<canvas class="field" aria-hidden="true"></canvas>
+<canvas class="marks" aria-hidden="true"></canvas>
+<canvas class="veil" aria-hidden="true"></canvas>
+<!-- HUD in the side margins: a tick ruler on the left, status boxes on the right (decoration; the
+     readouts are counts of what the page shows, plus the scroll position). -->
+<div class="hud" aria-hidden="true">
+  <div class="ruler"><b class="ruler-mark"></b></div>
+  <div class="status">
+    <p><span>DOMAINS</span><b>03</b></p>
+    <p><span>SKILLS</span><b>07</b></p>
+    <p><span>LINKS</span><b>09</b></p>
+    <p><span>Y</span><b class="scroll-read">000</b></p>
+  </div>
+</div>
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar"><a href="../experience/">← Experience</a><span class="here">03 / Capability</span><a href="../record/">Record →</a></header>
 
 <main id="main">
-  <h1><span>&gt;</span> capability<span class="cursor" aria-hidden="true">_</span></h1>
+  <!-- Tactical terminal after an event PV: phosphor green on near-black, aperture-grille texture,
+       HUD frame, skills as modules in domain columns. Motion: capability.js. -->
+  <header class="head">
+    <h1><span class="prompt" aria-hidden="true">&gt;</span><span class="type">capability</span><span class="cursor" aria-hidden="true"></span></h1>
+  </header>
 
-  <!-- Spec sheet. Evidence links point to /work/#P-xx or /experience/#E-xx. No self-ratings. -->
-  <table class="spec">
-    <thead><tr><th scope="col">Domain</th><th scope="col">Skill</th><th scope="col">Evidence</th></tr></thead>
-    <tbody>
-      <tr><th scope="row" rowspan="2">Programming</th><td>C++</td><td></td></tr>
-      <tr><td>Python</td><td><a href="../work/#P-01">P-01</a><a href="../work/#P-02">P-02</a><a href="../experience/#E-03">E-03</a></td></tr>
-      <tr><th scope="row" rowspan="3">Data</th><td>scikit-learn, pandas, NumPy</td><td><a href="../work/#P-01">P-01</a></td></tr>
-      <tr><td>MySQL</td><td><a href="../work/#P-02">P-02</a><a href="../experience/#E-01">E-01</a></td></tr>
-      <tr><td>Dify, VLM workflows</td><td><a href="../work/#P-02">P-02</a><a href="../experience/#E-01">E-01</a></td></tr>
-      <tr><th scope="row" rowspan="2">Design</th><td>SolidWorks, Blender</td><td></td></tr>
-      <tr><td>Technical documentation</td><td><a href="../work/#P-03">P-03</a></td></tr>
-    </tbody>
-  </table>
+  <!-- Spec bank: one column per domain, one module per skill. Evidence links point to
+       /work/#P-xx or /experience/#E-xx. No self-ratings; empty evidence is intentional. -->
+  <div class="bank">
+    <section class="dom" aria-labelledby="d-prog" style="--c:0">
+      <h2 id="d-prog"><span class="tag" aria-hidden="true">D1</span>Programming</h2>
+      <ul>
+        <li class="mod" tabindex="0"><h3>C++</h3><p class="ev"><span class="chip none">No evidence</span></p></li>
+        <li class="mod" tabindex="0"><h3>Python</h3><p class="ev"><a class="chip" href="../work/#P-01">P-01</a><a class="chip" href="../work/#P-02">P-02</a><a class="chip" href="../experience/#E-03">E-03</a></p></li>
+      </ul>
+    </section>
+    <section class="dom" aria-labelledby="d-data" style="--c:1">
+      <h2 id="d-data"><span class="tag" aria-hidden="true">D2</span>Data</h2>
+      <ul>
+        <li class="mod" tabindex="0"><h3>scikit-learn, pandas, NumPy</h3><p class="ev"><a class="chip" href="../work/#P-01">P-01</a></p></li>
+        <li class="mod" tabindex="0"><h3>MySQL</h3><p class="ev"><a class="chip" href="../work/#P-02">P-02</a><a class="chip" href="../experience/#E-01">E-01</a></p></li>
+        <li class="mod" tabindex="0"><h3>Dify, VLM workflows</h3><p class="ev"><a class="chip" href="../work/#P-02">P-02</a><a class="chip" href="../experience/#E-01">E-01</a></p></li>
+      </ul>
+    </section>
+    <section class="dom" aria-labelledby="d-design" style="--c:2">
+      <h2 id="d-design"><span class="tag" aria-hidden="true">D3</span>Design</h2>
+      <ul>
+        <li class="mod" tabindex="0"><h3>SolidWorks, Blender</h3><p class="ev"><span class="chip none">No evidence</span></p></li>
+        <li class="mod" tabindex="0"><h3>Technical documentation</h3><p class="ev"><a class="chip" href="../work/#P-03">P-03</a></p></li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Cross-reference: the same links read the other way — each piece of evidence and the skills it
+       supports. Must match the modules above (tests/capability.test.cjs checks). -->
+  <section class="xref" aria-labelledby="x-h">
+    <h2 id="x-h"><span class="tag" aria-hidden="true">X</span>Evidence</h2>
+    <ol>
+      <li class="link" data-code="P-01"><a class="code" href="../work/#P-01">P-01</a><span class="wire" aria-hidden="true"></span><ul class="to"><li>Python</li><li>scikit-learn, pandas, NumPy</li></ul></li>
+      <li class="link" data-code="P-02"><a class="code" href="../work/#P-02">P-02</a><span class="wire" aria-hidden="true"></span><ul class="to"><li>Python</li><li>MySQL</li><li>Dify, VLM workflows</li></ul></li>
+      <li class="link" data-code="P-03"><a class="code" href="../work/#P-03">P-03</a><span class="wire" aria-hidden="true"></span><ul class="to"><li>Technical documentation</li></ul></li>
+      <li class="link" data-code="E-01"><a class="code" href="../experience/#E-01">E-01</a><span class="wire" aria-hidden="true"></span><ul class="to"><li>MySQL</li><li>Dify, VLM workflows</li></ul></li>
+      <li class="link" data-code="E-03"><a class="code" href="../experience/#E-03">E-03</a><span class="wire" aria-hidden="true"></span><ul class="to"><li>Python</li></ul></li>
+    </ol>
+  </section>
 </main>
 </body>
 </html>
