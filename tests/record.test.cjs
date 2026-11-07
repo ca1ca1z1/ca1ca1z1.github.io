@@ -5,7 +5,7 @@ const {CELL, METRES, INTRO_MS, snap, tick, altitude, diamond, veil, sweep, appro
 assert.strictEqual(CELL, 31, 'ruler matches the entrance cell');
 assert(INTRO_MS <= 2000, 'opening stays under 2 s');
 
-// Opening: covered at t=0, open and finished by INTRO_MS; panels only shrink, in whole cells.
+// Opening: covered at t=0, open and finished by INTRO_MS; panels only shrink, continuously.
 for (const h of [600, 812, 1000, 1441]) {
   const first = veil(0, h);
   assert(first.panel * 2 >= h, 'frame starts closed');
@@ -13,8 +13,8 @@ for (const h of [600, 812, 1000, 1441]) {
   let prev = first.panel;
   for (let t = 0; t <= INTRO_MS; t += 16) {
     const v = veil(t, h);
-    assert.strictEqual(v.panel % CELL, 0, 'panels move in whole cells');
     assert(v.panel <= prev, 'panels only open');
+    assert(prev - v.panel < h * .06, 'panels move smoothly (no large jumps between frames)');
     assert(v.line >= 0 && v.line <= 1 && v.lineAlpha >= 0 && v.lineAlpha <= 1);
     prev = v.panel;
   }
