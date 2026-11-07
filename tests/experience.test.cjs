@@ -1,6 +1,6 @@
 // Experience page motion: grid nodes, opening timeline and tear bands, echo, shards, smear.
 const assert = require('assert');
-const {CELL, NODE, OFF, INTRO_MS, TEAR_MS, HALO, HALO_MS, HALO_SOLID, node, rng, bands, intro, tearAt, echo, haloPhase, shards, smear} = require('../experience/experience.js');
+const {CELL, NODE, OFF, INTRO_MS, TEAR_MS, TAU, SECTOR, REGEN_WAIT, REGEN_MS, SHARD_MS, node, rng, bands, intro, tearAt, echo, fresh, strike, ringAt, sectorShards, smear} = require('../experience/experience.js');
 
 assert.strictEqual(CELL, 31, 'grid matches the entrance cell');
 assert.strictEqual(NODE, 2 * CELL, 'dot every two cells');
@@ -52,21 +52,39 @@ assert.strictEqual(echo(0, 3), 21);
 assert.strictEqual(echo(320, 3), 0);
 assert(echo(100, 2) < echo(0, 2));
 
-// Halo: short (well under a second) — a solid beat, then the shatter, then gone.
-assert(HALO_MS <= 600, 'click answer stays short');
-assert.strictEqual(haloPhase(0), 'solid');
-assert.strictEqual(haloPhase(HALO_SOLID - 1), 'solid');
-assert.strictEqual(haloPhase(HALO_SOLID), 'shatter');
-assert.strictEqual(haloPhase(HALO_MS - 1), 'shatter');
-assert.strictEqual(haloPhase(HALO_MS), null);
-assert.strictEqual(haloPhase(-1), null);
-// Shards: deterministic irregular polygons, all within the crumbled (left) arc, drifting outward.
-const s1 = shards(), s2 = shards();
-assert.deepStrictEqual(s1, s2);
-for (const s of s1) {
-  assert(s.a >= HALO.gap[0] && s.a <= HALO.gap[1], 'shard sits in the gap');
-  assert(s.pts.length >= 4 && s.pts.length <= 6, 'irregular polygon');
-  assert(s.drift > 0);
+// Breakable ring: each click takes the next sixth, counter-clockwise from +x; the dotted arc
+// reaches the gap's far end; six clicks empty it; extra clicks are ignored until it regrows.
+let st = fresh(), now = 0;
+assert.deepStrictEqual(ringAt(st, now), {from: 0, to: TAU, dotted: 0, state: st}, 'whole ring, no dotted arc');
+for (let k = 1; k <= 5; k++) {
+  st = strike(st, now += 50);
+  const r = ringAt(st, now);
+  assert.strictEqual(st.broken, k);
+  assert(Math.abs(r.from - k * SECTOR) < 1e-9 && r.to === TAU, 'ring keeps the remaining sectors');
+  assert(Math.abs(r.dotted - k * SECTOR) < 1e-9, 'dotted arc ends at the gap\'s far end');
+}
+st = strike(st, now += 50);
+assert.strictEqual(st.broken, 6);
+assert.strictEqual(st.regen, now + REGEN_WAIT, 'regrowth waits 0.1 s');
+assert.strictEqual(strike(st, now + 10), st, 'clicks ignored while empty');
+let r = ringAt(st, now + REGEN_WAIT - 1);
+assert.strictEqual(r.to - r.from, 0, 'nothing drawn during the pause');
+assert.strictEqual(r.dotted, TAU);
+r = ringAt(st, now + REGEN_WAIT + REGEN_MS / 2);
+assert(r.from === 0 && r.to > 0 && r.to < TAU && r.dotted === r.to, 'regrows counter-clockwise from +x');
+r = ringAt(st, now + REGEN_WAIT + REGEN_MS);
+assert.deepStrictEqual(r.state, fresh(), 'whole again after one turn');
+assert.deepStrictEqual(ringAt(st, now + REGEN_WAIT, true).state, fresh(), 'reduced tier regrows at once');
+assert(REGEN_WAIT === 100 && SHARD_MS <= 500);
+// Shards: deterministic irregular polygons inside their own sector, drifting outward.
+for (let i = 0; i < 6; i++) {
+  const a = sectorShards(i, 31), b = sectorShards(i, 31);
+  assert.deepStrictEqual(a, b);
+  for (const s of a) {
+    assert(s.a >= i * SECTOR && s.a <= (i + 1) * SECTOR, 'shard within its sector');
+    assert(s.pts.length >= 4 && s.pts.length <= 6, 'irregular polygon');
+    assert(s.drift > 0);
+  }
 }
 
 // Smear length grows with speed, within bounds.

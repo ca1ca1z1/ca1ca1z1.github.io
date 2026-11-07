@@ -3,15 +3,16 @@
      to cobalt for one beat; then the veil tears away in horizontal bands (datamosh), each band
      trailing a cobalt smear
    - pointer: a drafting compass placed whole on the nearest dot-grid node — construction lines
-     through it, a circle, a dotted arc, an orange centre, the node's coordinates
+     through it, a 2px ring, an orange centre, the node's coordinates, and a dotted arc that runs
+     counter-clockwise from +x to the far end of the ring's gap
+   - click / tap on open paper: the ring's next sixth breaks off into shards (counter-clockwise from
+     +x); after the sixth click, a 0.1 s pause, then the ring regrows in one turn (see strike/ringAt)
    - entry selection (hover or keyboard focus): the plate floods cobalt (CSS) while echo copies of
      its frame collapse onto it (canvas; dashed for draft plates)
-   - click / tap / keyboard focus: a short halo shatter (~0.5 s) on its own layer above the plates —
-     a solid ring already crumbling on its left, then outlines with the shards drifting off (see HALO);
-     the compass stays put throughout
    - scroll: horizontal smear bands, length set by scroll speed
-   Two tiers. Full: everything above. Reduced (prefers-reduced-motion): no opening, echo, halo or
-   smear; the compass remains, placed instantly, and the plate fill is instant (CSS).
+   Two tiers. Full: everything above. Reduced (prefers-reduced-motion): no opening, echo, shards,
+   regrowth turn or smear; the compass remains, its ring loses sectors and returns instantly, and
+   the plate fill is instant (CSS).
    The dot grid itself is CSS in page coordinates, so it scrolls natively. No dependencies;
    the loop sleeps when nothing moves. */
 (function (root, factory) {
@@ -20,7 +21,7 @@
 })(typeof window !== 'undefined' ? window : this, function () {
   'use strict';
   const CELL = 31, NODE = 62, OFF = 31, INTRO_MS = 1500;
-  const DRAW_MS = 360, INVERT_MS = 440, TEAR_MS = 1100, ECHO_MS = 320, HALO_MS = 480, SMEAR_MS = 260;
+  const DRAW_MS = 360, INVERT_MS = 440, TEAR_MS = 1100, ECHO_MS = 320, SMEAR_MS = 260;
   const COBALT = '29,68,200', PAPER = '205,212,212', ORANGE = '255,90,31';
   const clamp = x => Math.max(0, Math.min(1, x));
   const out = x => 1 - Math.pow(1 - clamp(x), 3);
@@ -57,48 +58,64 @@
   const tearAt = (t, band) => inOut((t - INVERT_MS - band.delay) / (TEAR_MS - INVERT_MS - 260));
   // Echo offset of copy k (1..n) at t ms after selection: starts at 7k px, collapses to 0.
   const echo = (t, k) => 7 * k * (1 - out(t / ECHO_MS));
-  // Halo shatter, after the PV (0:33.3), kept short: the ring prints solid cobalt with its left side
-  // already crumbled into irregular shards; then ring and shards fall to outlines, the ring open
-  // where it crumbled, the shards drifting a little outward as everything fades.
-  const HALO = {rx: 62, ry: 17, band: 6, gap: [Math.PI * .58, Math.PI * 1.42]}, HALO_SOLID = 80;
-  // Halo phase at t ms: 'solid' → 'shatter' (outlines, fading), then gone.
-  function haloPhase(t) {
-    if (t < 0 || t >= HALO_MS) return null;
-    return t < HALO_SOLID ? 'solid' : 'shatter';
+  // Breakable compass ring (after the PV's halo shatter, 0:33.3). The ring is six sectors. Each
+  // click breaks the next one, counter-clockwise from +x, into shards. Once all six are gone the
+  // ring waits REGEN_WAIT, then regrows in one counter-clockwise turn from +x. The outer dotted arc
+  // always runs counter-clockwise from +x to the far end of the gap (or of the regrowing ring).
+  // Angles here are counter-clockwise magnitudes from +x; on screen (y down) they are negated.
+  const TAU = Math.PI * 2, SECTOR = TAU / 6, REGEN_WAIT = 100, REGEN_MS = 520, SHARD_MS = 420, SHARD_SOLID = 60;
+  const fresh = () => ({broken: 0, regen: -1});
+  // A click: break the next sector; ignored while the ring is fully broken or regrowing.
+  function strike(state, now) {
+    if (state.broken >= 6) return state;
+    const broken = state.broken + 1;
+    return {broken, regen: broken === 6 ? now + REGEN_WAIT : -1};
   }
-  // Shards: irregular polygons (4–6 vertices) in a band along the crumbled (left) arc, each with a
-  // small outward drift. Points are relative to the shard's centre.
-  function shards(n = 28, seed = 13) {
-    const r = rng(seed), [g0, g1] = HALO.gap;
-    return Array.from({length: n}, (_, i) => {
-      const a = g0 + (g1 - g0) * ((i + r() * .8) / n), size = 2 + r() * 4, k = 4 + Math.floor(r() * 3);
-      const pts = Array.from({length: k}, (_, j) => {
-        const q = (j / k) * Math.PI * 2 + r() * .6, s = size * (.55 + r() * .6);
-        return [Math.cos(q) * s, Math.sin(q) * s * .8];
+  // What to draw at `now`: the ring arc [from, to], the dotted arc's extent, and the state after
+  // (regrowth finished → fresh). `instant` (reduced tier) regrows without the turn.
+  function ringAt(state, now, instant) {
+    if (state.broken < 6) return {from: state.broken * SECTOR, to: TAU, dotted: state.broken * SECTOR, state};
+    if (now < state.regen) return {from: 0, to: 0, dotted: TAU, state};
+    const k = instant ? 1 : out((now - state.regen) / REGEN_MS);
+    if (k >= 1) return {from: 0, to: TAU, dotted: 0, state: fresh()};
+    return {from: 0, to: k * TAU, dotted: k * TAU, state};
+  }
+  // Shards for sector i: irregular polygons (4–6 vertices) along that sector of a ring of radius r,
+  // each drifting outward. Points are relative to the shard's centre.
+  function sectorShards(i, r, n = 8) {
+    const g = rng(97 + i * 31);
+    return Array.from({length: n}, (_, j) => {
+      const a = i * SECTOR + SECTOR * ((j + .15 + g() * .7) / n), size = 1.6 + g() * 2.6, k = 4 + Math.floor(g() * 3);
+      const pts = Array.from({length: k}, (_, m) => {
+        const q = (m / k) * TAU + g() * .6, s = size * (.6 + g() * .6);
+        return [Math.cos(q) * s, Math.sin(q) * s];
       });
-      return {a, off: (r() - .4) * 15, drift: 3 + r() * 9, pts};
+      return {a, r: r + (g() - .5) * 4, drift: 3 + g() * 10, pts};
     });
   }
   // Smear length (px) for a scroll speed (px/ms).
   const smear = v => Math.round(Math.max(40, Math.min(600, Math.abs(v) * 160)));
-  const api = {CELL, NODE, OFF, INTRO_MS, TEAR_MS, HALO, HALO_MS, HALO_SOLID, node, rng, bands, intro, tearAt, echo, haloPhase, shards, smear};
+  const api = {CELL, NODE, OFF, INTRO_MS, TEAR_MS, TAU, SECTOR, REGEN_WAIT, REGEN_MS, SHARD_MS,
+    node, rng, bands, intro, tearAt, echo, fresh, strike, ringAt, sectorShards, smear};
   if (typeof document === 'undefined') return api;
 
   const html = document.documentElement;
-  const field = document.querySelector('.field'), veilEl = document.querySelector('.veil'), fxEl = document.querySelector('.fx');
-  const ctx = field && field.getContext('2d'), vtx = veilEl && veilEl.getContext('2d'), hx = fxEl && fxEl.getContext('2d');
-  if (!ctx || !vtx || !hx) { html.classList.remove('is-intro'); return api; }
+  const field = document.querySelector('.field'), veilEl = document.querySelector('.veil');
+  const ctx = field && field.getContext('2d'), vtx = veilEl && veilEl.getContext('2d');
+  if (!ctx || !vtx) { html.classList.remove('is-intro'); return api; }
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const rgba = (rgb, a) => `rgba(${rgb},${a})`;
   const MONO = '14px ui-monospace, Consolas, "Courier New", monospace';
-  const SHARDS = shards();
+  const R = NODE / 2;   // compass ring radius; the dotted arc runs at 2R
+  const SHARDS = Array.from({length: 6}, (_, i) => sectorShards(i, R));
 
   let w = 0, h = 0, dpr = 1, raf = 0;
   let introOn = html.classList.contains('is-intro') && !reduce.matches, t0 = -1, plate = null, plateBands = null;
   const pointer = {x: 0, y: 0, on: false};
-  // Compass: the page-coordinate grid node it sits on. It is placed whole, never redrawn in.
+  // Compass: the page-coordinate grid node it sits on (placed whole), and its ring's break state.
   const compass = {nx: NaN, ny: NaN};
-  let selected = null, echoT = -1, halos = [], haloCount = 0, smears = [], lastScroll = {y: scrollY, t: performance.now()};
+  let ringState = fresh(), shatters = [];
+  let selected = null, echoT = -1, smears = [], lastScroll = {y: scrollY, t: performance.now()};
   if (!introOn) { html.classList.remove('is-intro'); veilEl.hidden = true; }
 
   function fit(c, x) {
@@ -108,7 +125,7 @@
   }
   function resize() {
     w = innerWidth; h = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2);
-    fit(field, ctx); fit(fxEl, hx);
+    fit(field, ctx);
     if (introOn) { fit(veilEl, vtx); plate = null; plateBands = bands(h); }
     draw(performance.now());
   }
@@ -162,18 +179,27 @@
 
   // --- field ---------------------------------------------------------------------------------
   function drawCompass(now) {
+    const ring = ringAt(ringState, now, reduce.matches);
+    ringState = ring.state;
     if (!pointer.on || selected || isNaN(compass.nx)) return;
-    const x = compass.nx, y = compass.ny - scrollY, R = NODE / 2, p = 1;
+    const x = compass.nx, y = compass.ny - scrollY;
     ctx.fillStyle = rgba(COBALT, .16);
     ctx.fillRect(0, Math.round(y), w, 1); ctx.fillRect(Math.round(x), 0, 1, h);   // construction lines
-    ctx.strokeStyle = rgba(COBALT, .85); ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(x, y, R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); ctx.stroke();
+    // Ring (2px): what remains counter-clockwise from the gap's far end round to +x.
+    ctx.strokeStyle = rgba(COBALT, .9); ctx.lineWidth = 2; ctx.lineCap = 'butt';
+    if (ring.to > ring.from) { ctx.beginPath(); ctx.arc(x, y, R, -ring.from, -ring.to, true); ctx.stroke(); }
+    ctx.lineWidth = 1;
     ctx.beginPath();                                                                  // crosshair ticks
     ctx.moveTo(x - 14, y + .5); ctx.lineTo(x - 5, y + .5); ctx.moveTo(x + 5, y + .5); ctx.lineTo(x + 14, y + .5);
     ctx.moveTo(x + .5, y - 14); ctx.lineTo(x + .5, y - 5); ctx.moveTo(x + .5, y + 5); ctx.lineTo(x + .5, y + 14);
     ctx.stroke();
-    ctx.fillStyle = rgba(COBALT, .7);                                                 // dotted guide arc
-    for (let a = -1.9; a < -1.9 + 1.7 * p; a += .12) ctx.fillRect(x + Math.cos(a) * R * 2, y + Math.sin(a) * R * 2, 1.5, 1.5);
+    // Dotted arc at 2R: from +x counter-clockwise to the gap's far end, closed by a radial tick.
+    ctx.fillStyle = rgba(COBALT, .7);
+    for (let a = 0; a <= ring.dotted + 1e-6; a += .2) ctx.fillRect(x + Math.cos(-a) * R * 2 - .75, y + Math.sin(-a) * R * 2 - .75, 1.5, 1.5);
+    ctx.strokeStyle = rgba(COBALT, .8);
+    for (const a of ring.dotted > 0 ? [0, ring.dotted] : [0]) {
+      ctx.beginPath(); ctx.moveTo(x + Math.cos(-a) * (R * 2 - 4), y + Math.sin(-a) * (R * 2 - 4)); ctx.lineTo(x + Math.cos(-a) * (R * 2 + 4), y + Math.sin(-a) * (R * 2 + 4)); ctx.stroke();
+    }
     ctx.fillStyle = rgba(ORANGE, 1); ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
     // Coordinates of the node, boxed on paper so they stay legible over anything.
     const label = String((compass.nx - OFF) / NODE).padStart(2, '0') + ' · ' + String((compass.ny - OFF) / NODE).padStart(2, '0');
@@ -196,48 +222,22 @@
     }
     ctx.setLineDash([]);
   }
-  // Click layer (fx canvas, above the plates so a click always answers): the halo's shatter.
-  // Ring = a band drawn solid (one stroke) or as a double hairline; once shattered it is open
-  // across HALO.gap and the shards hang in the gap, drifting outward as everything fades.
-  function ringPath(x, y, s, a0, a1, grow) {
-    hx.beginPath(); hx.ellipse(x, y, HALO.rx * s + grow, HALO.ry * s + grow, 0, a0, a1);
-  }
-  function ring(x, y, s, ink, solid) {
-    const [a0, a1] = [HALO.gap[1], HALO.gap[0] + Math.PI * 2];
-    hx.lineCap = 'butt'; hx.strokeStyle = ink;
-    if (solid) { hx.lineWidth = HALO.band; ringPath(x, y, s, a0, a1, 0); hx.stroke(); return; }
-    const e = HALO.band / 2 - .5;   // two hairlines at the band's edges, closed at the open ends
-    hx.lineWidth = 1;
-    ringPath(x, y, s, a0, a1, e); hx.stroke(); ringPath(x, y, s, a0, a1, -e); hx.stroke();
-    for (const a of [a0, a1]) {
-      const c = Math.cos(a), sn = Math.sin(a);
-      hx.beginPath();
-      hx.moveTo(x + c * (HALO.rx * s + e), y + sn * (HALO.ry * s + e)); hx.lineTo(x + c * (HALO.rx * s - e), y + sn * (HALO.ry * s - e));
-      hx.stroke();
+  // Shards of a broken sector, where it broke: solid cobalt for a beat, then outlines drifting
+  // outward and fading.
+  function drawShatters(now) {
+    shatters = shatters.filter(s => now - s.t0 < SHARD_MS);
+    for (const s of shatters) {
+      const t = now - s.t0, k = clamp((t - SHARD_SOLID) / (SHARD_MS - SHARD_SOLID)), solid = t < SHARD_SOLID;
+      ctx.globalAlpha = 1 - k * k; ctx.lineWidth = 1; ctx.strokeStyle = rgba(COBALT, 1);
+      ctx.fillStyle = solid ? rgba(COBALT, 1) : rgba(PAPER, 1);
+      for (const sh of SHARDS[s.i]) {
+        const r = sh.r + sh.drift * out(k), cx = s.x + Math.cos(-sh.a) * r, cy = s.y - scrollY + Math.sin(-sh.a) * r;
+        ctx.beginPath();
+        sh.pts.forEach(([px, py], j) => j ? ctx.lineTo(cx + px, cy + py) : ctx.moveTo(cx + px, cy + py));
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
     }
-  }
-  function shardsAt(x, y, s, ink, ground, solid, drift) {
-    hx.lineWidth = 1; hx.strokeStyle = ink; hx.fillStyle = solid ? ink : ground;
-    for (const sh of SHARDS) {
-      const r = 1 + (sh.off + sh.drift * drift) / (HALO.rx * s);
-      const cx = x + Math.cos(sh.a) * HALO.rx * s * r - sh.drift * drift * .6, cy = y + Math.sin(sh.a) * HALO.ry * s * r + sh.drift * drift * .25;
-      hx.beginPath();
-      sh.pts.forEach(([px, py], j) => j ? hx.lineTo(cx + px * s, cy + py * s) : hx.moveTo(cx + px * s, cy + py * s));
-      hx.closePath(); hx.fill(); hx.stroke();
-    }
-  }
-  function drawHalos(now) {
-    hx.clearRect(0, 0, w, h);
-    halos = halos.filter(o => haloPhase(now - o.t0));
-    const ink = rgba(COBALT, 1), ground = rgba(PAPER, 1);
-    for (const o of halos) {
-      const t = now - o.t0, x = o.x, y = o.y - scrollY, s = o.k;
-      if (haloPhase(t) === 'solid') { ring(x, y, s, ink, true); shardsAt(x, y, s, ink, ground, true, 0); continue; }
-      const k = (t - HALO_SOLID) / (HALO_MS - HALO_SOLID);
-      hx.globalAlpha = 1 - k * k;
-      ring(x, y, s, ink, false); shardsAt(x, y, s, ink, ground, false, out(k));
-      hx.globalAlpha = 1;
-    }
+    ctx.globalAlpha = 1;
   }
   function drawSmears(now) {
     smears = smears.filter(s => now - s.t0 < SMEAR_MS);
@@ -250,8 +250,7 @@
   function draw(now) {
     ctx.clearRect(0, 0, w, h);
     if (introOn) return;
-    drawSmears(now); drawEcho(now); drawCompass(now);
-    drawHalos(now);
+    drawSmears(now); drawEcho(now); drawCompass(now); drawShatters(now);
   }
 
   function frame(now) {
@@ -262,7 +261,7 @@
       if (intro(t).done) endIntro(); else if (t < TEAR_MS) drawVeil(t); else vtx.clearRect(0, 0, veilEl.width, veilEl.height);
     }
     draw(now);
-    if (introOn || echoT >= 0 || halos.length || smears.length) raf = requestAnimationFrame(frame);
+    if (introOn || echoT >= 0 || shatters.length || smears.length || ringState.broken >= 6) raf = requestAnimationFrame(frame);
   }
   const wake = () => { if (!raf && !document.hidden) raf = requestAnimationFrame(frame); };
   const live = () => !reduce.matches;
@@ -275,10 +274,16 @@
     selected = li; echoT = live() ? performance.now() : -1; wake();
   }
   function deselect(li) { if (selected === li) { selected = null; echoT = -1; draw(performance.now()); } }
-  function halo(x, y, k) {
-    if (!live()) return;
-    if (halos.length > 4) halos.shift();
-    halos.push({x: node(x), y: node(y + scrollY), t0: performance.now(), k, n: ++haloCount % 100}); wake();
+  // A click on open paper (where the compass shows) breaks the ring's next sector.
+  function breakRing() {
+    if (introOn || !pointer.on || selected || ringState.broken >= 6) return;
+    const now = performance.now(), i = ringState.broken;
+    ringState = strike(ringState, now);
+    if (live()) {
+      if (shatters.length > 6) shatters.shift();
+      shatters.push({i, x: compass.nx, y: compass.ny, t0: now});
+    }
+    draw(now); wake();
   }
 
   addEventListener('pointermove', e => {
@@ -287,7 +292,7 @@
   }, {passive: true});
   addEventListener('pointerdown', e => {
     pointer.x = e.clientX; pointer.y = e.clientY; pointer.on = true;
-    compassTo(); halo(e.clientX, e.clientY, 1); draw(performance.now()); wake();
+    compassTo(); breakRing(); draw(performance.now());
   }, {passive: true});
   addEventListener('pointerup', e => { if (e.pointerType === 'touch') { pointer.on = false; draw(performance.now()); } }, {passive: true});
   html.addEventListener('pointerleave', () => { pointer.on = false; draw(performance.now()); });
@@ -310,17 +315,11 @@
     li.addEventListener('focusin', () => { if (li.matches(':focus-visible') || li.querySelector(':focus-visible')) select(li); });
     li.addEventListener('focusout', e => { if (!li.contains(e.relatedTarget)) deselect(li); });
   });
-  // Keyboard parity for the halo: focusing anything prints a small one at its centre.
-  document.addEventListener('focusin', e => {
-    if (!e.target.matches?.(':focus-visible')) return;
-    const b = e.target.getBoundingClientRect();
-    halo(b.left + Math.min(b.width / 2, 120), b.top + Math.min(b.height / 2, 40), .7);
-  });
 
   addEventListener('resize', resize);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && introOn) wake(); });
   reduce.addEventListener?.('change', () => {
-    halos = []; smears = []; echoT = -1;
+    shatters = []; smears = []; echoT = -1;
     if (introOn) endIntro();
     draw(performance.now());
   });
