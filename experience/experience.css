@@ -69,10 +69,10 @@ main:focus{outline:none}
 .log dd{margin:0}
 
 /* Selection (hover or keyboard focus): the plate floods cobalt from its base, type reverses. */
-.log li:hover,.log li:focus-within{color:var(--reverse)}
-.log li:hover::before,.log li:focus-within::before{transform:none}
-.log li:hover :is(.code,.role,dt),.log li:focus-within :is(.code,.role,dt){color:var(--reverse)}
-.log li:hover .joint,.log li:focus-within .joint{background:var(--cobalt);color:var(--reverse)}
+.log li:hover,.log li:is(:focus-visible,:has(:focus-visible)){color:var(--reverse)}
+.log li:hover::before,.log li:is(:focus-visible,:has(:focus-visible))::before{transform:none}
+.log li:hover :is(.code,.role,dt),.log li:is(:focus-visible,:has(:focus-visible)) :is(.code,.role,dt){color:var(--reverse)}
+.log li:hover .joint,.log li:is(:focus-visible,:has(:focus-visible)) .joint{background:var(--cobalt);color:var(--reverse)}
 
 /* Groups: a status line in the PV's small mono caps, on a construction line out to a node. */
 .group+.group{margin-top:93px}
@@ -93,10 +93,10 @@ main:focus{outline:none}
 .pro .log li::after{content:'';position:absolute;right:28px;top:28px;width:46px;height:46px;border:1px solid var(--cobalt);border-radius:50%;pointer-events:none;
   background:linear-gradient(var(--cobalt),var(--cobalt)) 50% 50%/1px 100% no-repeat,linear-gradient(var(--cobalt),var(--cobalt)) 50% 50%/100% 1px no-repeat}
 .pro .joint{background:var(--cobalt);color:var(--reverse)}
-.pro .log li:hover .code,.pro .log li:focus-within .code{background:var(--reverse);color:var(--cobalt)}
-.pro .log li:hover::after,.pro .log li:focus-within::after{border-color:var(--reverse);
+.pro .log li:hover .code,.pro .log li:is(:focus-visible,:has(:focus-visible)) .code{background:var(--reverse);color:var(--cobalt)}
+.pro .log li:hover::after,.pro .log li:is(:focus-visible,:has(:focus-visible))::after{border-color:var(--reverse);
   background:linear-gradient(var(--reverse),var(--reverse)) 50% 50%/1px 100% no-repeat,linear-gradient(var(--reverse),var(--reverse)) 50% 50%/100% 1px no-repeat}
-.pro .log li:hover .joint,.pro .log li:focus-within .joint{background:var(--paper);color:var(--cobalt)}
+.pro .log li:hover .joint,.pro .log li:is(:focus-visible,:has(:focus-visible)) .joint{background:var(--paper);color:var(--cobalt)}
 
 /* Other = draft plate: dashed hairline frame, no corner marks, lighter title, hollow dashed
    joint, dashed rig — still construction lines, not yet inked. */

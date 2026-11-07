@@ -311,7 +311,7 @@
   // Entry selection: hover and keyboard focus share one response.
   document.querySelectorAll('.log li').forEach(li => {
     li.addEventListener('pointerenter', () => select(li));
-    li.addEventListener('pointerleave', () => { if (!li.matches(':focus-within')) deselect(li); });
+    li.addEventListener('pointerleave', () => { if (!li.matches(':focus-visible, :has(:focus-visible)')) deselect(li); });
     li.addEventListener('focusin', () => { if (li.matches(':focus-visible') || li.querySelector(':focus-visible')) select(li); });
     li.addEventListener('focusout', e => { if (!li.contains(e.relatedTarget)) deselect(li); });
   });

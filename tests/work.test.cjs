@@ -40,4 +40,18 @@ const pins = [{x: 0, y: 0}, {x: 100, y: 0}];
 assert.strictEqual(nearest(90, 0, pins), 1);
 assert.strictEqual(nearest(5000, 0, pins), -1);
 assert(REACH > 0);
-console.log('PASS: work acrostic (' + word + '), slash timing and thread reach.');
+// Scroll: the index dissolves as it leaves the top — rows in arrival order, red letters last.
+const {acroProgress, leaveRow, leaveKey, sway} = require('../work/work.js');
+assert.strictEqual(acroProgress(400, 300), 0, 'whole while below the lead line');
+assert.strictEqual(acroProgress(-300, 300), 1, 'gone once scrolled past');
+for (let p = 0; p <= 1.0001; p += .05) {
+  for (let o = 1; o < 4; o++) assert(leaveRow(p, o) <= leaveRow(p, o - 1), 'later rows leave later');
+  assert(leaveKey(p) <= leaveRow(p, 3), 'red letters leave last');
+}
+assert.strictEqual(leaveRow(0, 0), 0); assert.strictEqual(leaveRow(1, 3), 1); assert.strictEqual(leaveKey(1), 1);
+// Board sway: straight-ish at the centre, more tilt and drift away from it, symmetric, bounded.
+assert.deepStrictEqual(sway(0), {tilt: 1, drift: 0});
+assert(sway(.5).tilt > sway(.2).tilt && sway(-.5).tilt === sway(.5).tilt);
+assert.strictEqual(sway(5).tilt, sway(1).tilt, 'clamped');
+assert(sway(.5).drift < 0 && sway(-.5).drift > 0, 'drifts against the offset');
+console.log('PASS: work acrostic (' + word + '), slash timing, thread reach and scroll effects.');

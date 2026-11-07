@@ -52,7 +52,16 @@
   function approach(value, goal, rate, epsilon = .3) {
     return Math.abs(goal - value) < epsilon ? goal : value + (goal - value) * rate;
   }
-  const api = {INTRO_MS, SLASH_MS, REACH, spine, split, slashAt, nearest, approach};
+  // Scroll, 1 — acrostic dissolve (the PV's names fading out at 1:27): p is how far the index has
+  // scrolled up out of view (0..1). Row o (its arrival order, 0..n-1) leaves early to late; the red
+  // key letters leave last.
+  const acroProgress = (top, height, lead = 80) => clamp((lead - top) / (height + lead));
+  const leaveRow = (p, o) => clamp((p - o * .12) / .4);
+  const leaveKey = p => clamp((p - .62) / .38);
+  // Scroll, 2 — board sway: d is a card's centre offset from the viewport centre, in viewport
+  // heights (clamped −1..1). Cards straighten at the centre and tilt more, and drift, away from it.
+  const sway = d => { d = Math.max(-1, Math.min(1, d)); return {tilt: 1 + 1.6 * Math.abs(d), drift: Math.round(-d * 16) + 0}; };
+  const api = {INTRO_MS, SLASH_MS, REACH, spine, split, slashAt, nearest, approach, acroProgress, leaveRow, leaveKey, sway};
   if (typeof document === 'undefined') return api;
 
   const html = document.documentElement;
@@ -142,8 +151,31 @@
   }, {passive: true});
   addEventListener('pointerup', e => { if (e.pointerType === 'touch') { pointer.on = false; wake(); } }, {passive: true});
   html.addEventListener('pointerleave', () => { pointer.on = false; draw(performance.now()); });
+  // Scroll effects (full tier): ghost drift, acrostic dissolve, board sway. Written as CSS custom
+  // properties, at most once per frame.
+  const acro = document.querySelector('.acro'), rows = [...document.querySelectorAll('.acro .row')];
+  let scrollQueued = false;
+  function applyScroll() {
+    scrollQueued = false;
+    if (reduce.matches) return;
+    if (ghost) ghost.style.setProperty('--drift', Math.round(-scrollY * .12) + 'px');
+    if (acro) {
+      const b = acro.getBoundingClientRect(), p = acroProgress(b.top, b.height);
+      acro.style.setProperty('--lk', leaveKey(p).toFixed(3));
+      for (const r of rows) r.style.setProperty('--l', leaveRow(p, +getComputedStyle(r).getPropertyValue('--o') || 0).toFixed(3));
+    }
+    for (const c of cards) {
+      const b = c.getBoundingClientRect(), s = sway((b.top + b.height / 2 - h / 2) / h);
+      c.style.setProperty('--tilt', s.tilt.toFixed(3)); c.style.setProperty('--py', s.drift + 'px');
+    }
+  }
+  function clearScroll() {
+    ghost?.style.removeProperty('--drift'); acro?.style.removeProperty('--lk');
+    for (const r of rows) r.style.removeProperty('--l');
+    for (const c of cards) { c.style.removeProperty('--tilt'); c.style.removeProperty('--py'); }
+  }
   addEventListener('scroll', () => {
-    if (ghost && !reduce.matches) ghost.style.setProperty('--drift', Math.round(-scrollY * .12) + 'px');
+    if (!scrollQueued && !reduce.matches) { scrollQueued = true; requestAnimationFrame(applyScroll); }
     draw(performance.now());
   }, {passive: true});
 
@@ -173,13 +205,13 @@
   // Keep the thread's pin on its tape while a card straightens, lifts or settles.
   for (const c of cards) c.addEventListener('transitionrun', () => { settleUntil = performance.now() + 400; wake(); });
 
-  addEventListener('resize', resize);
+  addEventListener('resize', () => { resize(); applyScroll(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });
   reduce.addEventListener?.('change', () => {
     marks = []; html.classList.remove('is-intro');
-    if (reduce.matches && ghost) ghost.style.removeProperty('--drift');
+    if (reduce.matches) clearScroll(); else applyScroll();
     draw(performance.now());
   });
-  resize();
+  resize(); applyScroll();
   return api;
 });
