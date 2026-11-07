@@ -6,8 +6,9 @@
      through it, a circle, a dotted arc, an orange centre, the node's coordinates
    - entry selection (hover or keyboard focus): the plate floods cobalt (CSS) while echo copies of
      its frame collapse onto it (canvas; dashed for draft plates)
-   - click / tap / keyboard focus: a numbered halo — inverted beat, its left side crumbles into
-     shards, a solid beat, then outlines with the ring left open and the shards hanging (see HALO)
+   - click / tap / keyboard focus: a short halo shatter (~0.5 s) on its own layer above the plates —
+     a solid ring already crumbling on its left, then outlines with the shards drifting off (see HALO);
+     the compass stays put throughout
    - scroll: horizontal smear bands, length set by scroll speed
    Two tiers. Full: everything above. Reduced (prefers-reduced-motion): no opening, echo, halo or
    smear; the compass remains, placed instantly, and the plate fill is instant (CSS).
@@ -19,7 +20,7 @@
 })(typeof window !== 'undefined' ? window : this, function () {
   'use strict';
   const CELL = 31, NODE = 62, OFF = 31, INTRO_MS = 1500;
-  const DRAW_MS = 360, INVERT_MS = 440, TEAR_MS = 1100, ECHO_MS = 320, HALO_MS = 1100, SMEAR_MS = 260;
+  const DRAW_MS = 360, INVERT_MS = 440, TEAR_MS = 1100, ECHO_MS = 320, HALO_MS = 480, SMEAR_MS = 260;
   const COBALT = '29,68,200', PAPER = '205,212,212', ORANGE = '255,90,31';
   const clamp = x => Math.max(0, Math.min(1, x));
   const out = x => 1 - Math.pow(1 - clamp(x), 3);
@@ -56,38 +57,37 @@
   const tearAt = (t, band) => inOut((t - INVERT_MS - band.delay) / (TEAR_MS - INVERT_MS - 260));
   // Echo offset of copy k (1..n) at t ms after selection: starts at 7k px, collapses to 0.
   const echo = (t, k) => 7 * k * (1 - out(t / ECHO_MS));
-  // Halo, after the PV (0:33.3): a thin double-line ring with its number above; one inverted beat;
-  // the left of the ring crumbles into a band of irregular shards; everything prints solid cobalt
-  // for a beat; then ring and shards fall back to outlines, the ring open where it crumbled, the
-  // shards hanging almost still in its place while the whole halo slowly grows.
-  const HALO = {rx: 93, ry: 26, band: 9, gap: [Math.PI * .58, Math.PI * 1.42]};
-  // Halo phase at t ms: 'outline' → 'invert' → 'solid' → 'shatter' (outlines, ring open), then gone.
+  // Halo shatter, after the PV (0:33.3), kept short: the ring prints solid cobalt with its left side
+  // already crumbled into irregular shards; then ring and shards fall to outlines, the ring open
+  // where it crumbled, the shards drifting a little outward as everything fades.
+  const HALO = {rx: 62, ry: 17, band: 6, gap: [Math.PI * .58, Math.PI * 1.42]}, HALO_SOLID = 80;
+  // Halo phase at t ms: 'solid' → 'shatter' (outlines, fading), then gone.
   function haloPhase(t) {
     if (t < 0 || t >= HALO_MS) return null;
-    return t < 60 ? 'outline' : t < 120 ? 'invert' : t < 200 ? 'solid' : 'shatter';
+    return t < HALO_SOLID ? 'solid' : 'shatter';
   }
   // Shards: irregular polygons (4–6 vertices) in a band along the crumbled (left) arc, each with a
   // small outward drift. Points are relative to the shard's centre.
   function shards(n = 28, seed = 13) {
     const r = rng(seed), [g0, g1] = HALO.gap;
     return Array.from({length: n}, (_, i) => {
-      const a = g0 + (g1 - g0) * ((i + r() * .8) / n), size = 3 + r() * 6, k = 4 + Math.floor(r() * 3);
+      const a = g0 + (g1 - g0) * ((i + r() * .8) / n), size = 2 + r() * 4, k = 4 + Math.floor(r() * 3);
       const pts = Array.from({length: k}, (_, j) => {
         const q = (j / k) * Math.PI * 2 + r() * .6, s = size * (.55 + r() * .6);
         return [Math.cos(q) * s, Math.sin(q) * s * .8];
       });
-      return {a, off: (r() - .4) * 22, drift: 4 + r() * 12, pts};
+      return {a, off: (r() - .4) * 15, drift: 3 + r() * 9, pts};
     });
   }
   // Smear length (px) for a scroll speed (px/ms).
   const smear = v => Math.round(Math.max(40, Math.min(600, Math.abs(v) * 160)));
-  const api = {CELL, NODE, OFF, INTRO_MS, TEAR_MS, HALO, HALO_MS, node, rng, bands, intro, tearAt, echo, haloPhase, shards, smear};
+  const api = {CELL, NODE, OFF, INTRO_MS, TEAR_MS, HALO, HALO_MS, HALO_SOLID, node, rng, bands, intro, tearAt, echo, haloPhase, shards, smear};
   if (typeof document === 'undefined') return api;
 
   const html = document.documentElement;
-  const field = document.querySelector('.field'), veilEl = document.querySelector('.veil');
-  const ctx = field && field.getContext('2d'), vtx = veilEl && veilEl.getContext('2d');
-  if (!ctx || !vtx) { html.classList.remove('is-intro'); return api; }
+  const field = document.querySelector('.field'), veilEl = document.querySelector('.veil'), fxEl = document.querySelector('.fx');
+  const ctx = field && field.getContext('2d'), vtx = veilEl && veilEl.getContext('2d'), hx = fxEl && fxEl.getContext('2d');
+  if (!ctx || !vtx || !hx) { html.classList.remove('is-intro'); return api; }
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const rgba = (rgb, a) => `rgba(${rgb},${a})`;
   const MONO = '14px ui-monospace, Consolas, "Courier New", monospace';
@@ -108,7 +108,7 @@
   }
   function resize() {
     w = innerWidth; h = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2);
-    fit(field, ctx);
+    fit(field, ctx); fit(fxEl, hx);
     if (introOn) { fit(veilEl, vtx); plate = null; plateBands = bands(h); }
     draw(performance.now());
   }
@@ -163,7 +163,7 @@
   // --- field ---------------------------------------------------------------------------------
   function drawCompass(now) {
     if (!pointer.on || selected || isNaN(compass.nx)) return;
-    const x = compass.nx, y = compass.ny - scrollY, R = NODE, p = 1;
+    const x = compass.nx, y = compass.ny - scrollY, R = NODE / 2, p = 1;
     ctx.fillStyle = rgba(COBALT, .16);
     ctx.fillRect(0, Math.round(y), w, 1); ctx.fillRect(Math.round(x), 0, 1, h);   // construction lines
     ctx.strokeStyle = rgba(COBALT, .85); ctx.lineWidth = 1;
@@ -173,7 +173,7 @@
     ctx.moveTo(x + .5, y - 14); ctx.lineTo(x + .5, y - 5); ctx.moveTo(x + .5, y + 5); ctx.lineTo(x + .5, y + 14);
     ctx.stroke();
     ctx.fillStyle = rgba(COBALT, .7);                                                 // dotted guide arc
-    for (let a = -1.9; a < -1.9 + 1.7 * p; a += .07) ctx.fillRect(x + Math.cos(a) * R * 2, y + Math.sin(a) * R * 2, 1.5, 1.5);
+    for (let a = -1.9; a < -1.9 + 1.7 * p; a += .12) ctx.fillRect(x + Math.cos(a) * R * 2, y + Math.sin(a) * R * 2, 1.5, 1.5);
     ctx.fillStyle = rgba(ORANGE, 1); ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
     // Coordinates of the node, boxed on paper so they stay legible over anything.
     const label = String((compass.nx - OFF) / NODE).padStart(2, '0') + ' · ' + String((compass.ny - OFF) / NODE).padStart(2, '0');
@@ -196,61 +196,47 @@
     }
     ctx.setLineDash([]);
   }
-  // One halo frame. Ring = a thick band drawn either solid (one stroke) or as a double hairline
-  // (thick stroke, then paper inside); in the last phase the band is open across HALO.gap.
+  // Click layer (fx canvas, above the plates so a click always answers): the halo's shatter.
+  // Ring = a band drawn solid (one stroke) or as a double hairline; once shattered it is open
+  // across HALO.gap and the shards hang in the gap, drifting outward as everything fades.
   function ringPath(x, y, s, a0, a1, grow) {
-    ctx.beginPath(); ctx.ellipse(x, y, HALO.rx * s + grow, HALO.ry * s + grow, 0, a0, a1);
+    hx.beginPath(); hx.ellipse(x, y, HALO.rx * s + grow, HALO.ry * s + grow, 0, a0, a1);
   }
-  function ring(x, y, s, ink, ground, solid, open) {
-    const [a0, a1] = open ? [HALO.gap[1], HALO.gap[0] + Math.PI * 2] : [0, Math.PI * 2];
-    ctx.lineCap = 'butt';
-    ctx.strokeStyle = ink;
-    if (solid) { ctx.lineWidth = HALO.band; ringPath(x, y, s, a0, a1, 0); ctx.stroke(); return; }
-    const e = HALO.band / 2 - .5;   // outline = two hairlines at the band's edges, joined at open ends
-    ctx.lineWidth = 1;
-    ringPath(x, y, s, a0, a1, e); ctx.stroke(); ringPath(x, y, s, a0, a1, -e); ctx.stroke();
-    if (open) for (const a of [a0, a1]) {
+  function ring(x, y, s, ink, solid) {
+    const [a0, a1] = [HALO.gap[1], HALO.gap[0] + Math.PI * 2];
+    hx.lineCap = 'butt'; hx.strokeStyle = ink;
+    if (solid) { hx.lineWidth = HALO.band; ringPath(x, y, s, a0, a1, 0); hx.stroke(); return; }
+    const e = HALO.band / 2 - .5;   // two hairlines at the band's edges, closed at the open ends
+    hx.lineWidth = 1;
+    ringPath(x, y, s, a0, a1, e); hx.stroke(); ringPath(x, y, s, a0, a1, -e); hx.stroke();
+    for (const a of [a0, a1]) {
       const c = Math.cos(a), sn = Math.sin(a);
-      ctx.beginPath();
-      ctx.moveTo(x + c * (HALO.rx * s + e), y + sn * (HALO.ry * s + e)); ctx.lineTo(x + c * (HALO.rx * s - e), y + sn * (HALO.ry * s - e));
-      ctx.stroke();
+      hx.beginPath();
+      hx.moveTo(x + c * (HALO.rx * s + e), y + sn * (HALO.ry * s + e)); hx.lineTo(x + c * (HALO.rx * s - e), y + sn * (HALO.ry * s - e));
+      hx.stroke();
     }
   }
   function shardsAt(x, y, s, ink, ground, solid, drift) {
-    ctx.lineWidth = 1; ctx.strokeStyle = ink; ctx.fillStyle = solid ? ink : ground;
+    hx.lineWidth = 1; hx.strokeStyle = ink; hx.fillStyle = solid ? ink : ground;
     for (const sh of SHARDS) {
       const r = 1 + (sh.off + sh.drift * drift) / (HALO.rx * s);
       const cx = x + Math.cos(sh.a) * HALO.rx * s * r - sh.drift * drift * .6, cy = y + Math.sin(sh.a) * HALO.ry * s * r + sh.drift * drift * .25;
-      ctx.beginPath();
-      sh.pts.forEach(([px, py], j) => j ? ctx.lineTo(cx + px, cy + py) : ctx.moveTo(cx + px, cy + py));
-      ctx.closePath(); ctx.fill(); ctx.stroke();
+      hx.beginPath();
+      sh.pts.forEach(([px, py], j) => j ? hx.lineTo(cx + px * s, cy + py * s) : hx.moveTo(cx + px * s, cy + py * s));
+      hx.closePath(); hx.fill(); hx.stroke();
     }
   }
   function drawHalos(now) {
+    hx.clearRect(0, 0, w, h);
     halos = halos.filter(o => haloPhase(now - o.t0));
     const ink = rgba(COBALT, 1), ground = rgba(PAPER, 1);
     for (const o of halos) {
-      const t = now - o.t0, phase = haloPhase(t), x = o.x, y = o.y - scrollY;
-      const s = o.k * (1 + .07 * out(t / HALO_MS));                      // slow push-in
-      const fade = 1 - clamp((t - (HALO_MS - 300)) / 300);
-      ctx.globalAlpha = fade;
-      if (phase === 'invert') {   // the inverted beat: a cobalt patch, the ring and shards in paper
-        const pw = HALO.rx * s * 2.6, ph = HALO.ry * s * 5.2;
-        ctx.fillStyle = ink; ctx.fillRect(Math.round(x - pw / 2), Math.round(y - ph / 2), Math.round(pw), Math.round(ph));
-        ring(x, y, s, ground, ink, true, false); shardsAt(x, y, s, ground, ink, true, 0);
-      } else if (phase === 'solid') {
-        ring(x, y, s, ink, ground, true, true); shardsAt(x, y, s, ink, ground, true, 0);
-      } else if (phase === 'outline') {
-        ring(x, y, s, ink, ground, false, false);
-      } else {
-        const d = out((t - 200) / (HALO_MS - 200));
-        ring(x, y, s, ink, ground, false, true); shardsAt(x, y, s, ink, ground, false, d);
-      }
-      // Its number, above the ring, as in the PV's "13".
-      ctx.font = `700 ${MONO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-      ctx.fillStyle = phase === 'invert' ? ground : ink;
-      ctx.fillText(String(o.n).padStart(2, '0'), x, y - HALO.ry * s - HALO.band / 2 - 3);
-      ctx.textAlign = 'left'; ctx.globalAlpha = 1;
+      const t = now - o.t0, x = o.x, y = o.y - scrollY, s = o.k;
+      if (haloPhase(t) === 'solid') { ring(x, y, s, ink, true); shardsAt(x, y, s, ink, ground, true, 0); continue; }
+      const k = (t - HALO_SOLID) / (HALO_MS - HALO_SOLID);
+      hx.globalAlpha = 1 - k * k;
+      ring(x, y, s, ink, false); shardsAt(x, y, s, ink, ground, false, out(k));
+      hx.globalAlpha = 1;
     }
   }
   function drawSmears(now) {
@@ -264,8 +250,8 @@
   function draw(now) {
     ctx.clearRect(0, 0, w, h);
     if (introOn) return;
-    drawSmears(now); drawEcho(now);
-    if (halos.length) drawHalos(now); else drawCompass(now);   // the compass steps aside while a halo plays
+    drawSmears(now); drawEcho(now); drawCompass(now);
+    drawHalos(now);
   }
 
   function frame(now) {

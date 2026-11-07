@@ -16,8 +16,9 @@
    in each tile, so nodes sit at 31 + 62k. experience.js snaps to the same nodes. */
 body{overflow-x:hidden;
   background:radial-gradient(circle at 31px 31px,rgb(29 68 200 / .38) 1.1px,transparent 1.6px) 0 0/62px 62px,var(--bg)}
-.field,.veil{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+.field,.veil,.fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 .field{z-index:0}
+.fx{z-index:15}   /* click halo: above the plates, so every click answers */
 .veil{z-index:20}
 .bar,main,.end{position:relative;z-index:1}
 .bar{border-bottom:1px solid var(--line);background:var(--plate)}

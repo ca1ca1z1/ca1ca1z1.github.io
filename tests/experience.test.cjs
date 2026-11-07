@@ -1,6 +1,6 @@
 // Experience page motion: grid nodes, opening timeline and tear bands, echo, shards, smear.
 const assert = require('assert');
-const {CELL, NODE, OFF, INTRO_MS, TEAR_MS, HALO, HALO_MS, node, rng, bands, intro, tearAt, echo, haloPhase, shards, smear} = require('../experience/experience.js');
+const {CELL, NODE, OFF, INTRO_MS, TEAR_MS, HALO, HALO_MS, HALO_SOLID, node, rng, bands, intro, tearAt, echo, haloPhase, shards, smear} = require('../experience/experience.js');
 
 assert.strictEqual(CELL, 31, 'grid matches the entrance cell');
 assert.strictEqual(NODE, 2 * CELL, 'dot every two cells');
@@ -52,11 +52,12 @@ assert.strictEqual(echo(0, 3), 21);
 assert.strictEqual(echo(320, 3), 0);
 assert(echo(100, 2) < echo(0, 2));
 
-// Halo phases follow the PV: outline → inverted beat → solid → shatter, then gone.
-assert.strictEqual(haloPhase(0), 'outline');
-assert.strictEqual(haloPhase(80), 'invert');
-assert.strictEqual(haloPhase(150), 'solid');
-assert.strictEqual(haloPhase(400), 'shatter');
+// Halo: short (well under a second) — a solid beat, then the shatter, then gone.
+assert(HALO_MS <= 600, 'click answer stays short');
+assert.strictEqual(haloPhase(0), 'solid');
+assert.strictEqual(haloPhase(HALO_SOLID - 1), 'solid');
+assert.strictEqual(haloPhase(HALO_SOLID), 'shatter');
+assert.strictEqual(haloPhase(HALO_MS - 1), 'shatter');
 assert.strictEqual(haloPhase(HALO_MS), null);
 assert.strictEqual(haloPhase(-1), null);
 // Shards: deterministic irregular polygons, all within the crumbled (left) arc, drifting outward.
