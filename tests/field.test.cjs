@@ -28,4 +28,16 @@ assert.strictEqual(CELL, 31, 'lattice matches the entrance cell');
 assert.deepStrictEqual(cellAt(0, 0, 0, 0), {c: 0, r: 0});
 assert.deepStrictEqual(cellAt(30.9, 31, 0, 0), {c: 0, r: 1});
 assert.deepStrictEqual(cellAt(10, 10, 15, -31), {c: -1, r: 1});
-console.log('PASS: field ring wave and cell mapping.');
+// Home opening: the lattice front spreads from the centre, one whole cell at a time, never
+// shrinking, and covers everything once REVEAL_MS has passed; the whole opening stays under 2 s.
+assert(field.OPENING_MS <= 2000, 'home opening under 2 s');
+assert(field.REVEAL_MS < field.OPENING_MS);
+let prevFront = -1;
+for (let t = 0; t < field.REVEAL_MS; t += 16) {
+  const f = field.reveal(t, 30);
+  assert(Number.isInteger(f) && f >= prevFront && f <= 30, 'front advances in whole cells');
+  prevFront = f;
+}
+assert.strictEqual(field.reveal(0, 30), 0, 'starts at the centre cell');
+assert.strictEqual(field.reveal(field.REVEAL_MS, 30), Infinity, 'then everything shows');
+console.log('PASS: field ring wave, cell mapping and home opening reveal.');

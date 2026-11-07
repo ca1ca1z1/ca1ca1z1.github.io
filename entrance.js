@@ -48,6 +48,7 @@
   }
   function begin() {
     if(running)return;
+    document.documentElement?.classList.remove('is-opening'); // the long entrance replaces the short home opening
     clearTimeout(exitTimer);
     lastFocus=document.activeElement;resize();overlay.hidden=false;overlay.classList.remove('is-leaving');
     shell.inert=true;document.body.classList.add('is-entering');running=true;elapsed=0;
