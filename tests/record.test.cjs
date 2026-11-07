@@ -1,6 +1,6 @@
 // Record page motion: opening timeline, altitude ruler, diamond rings, arc swing.
 const assert = require('assert');
-const {CELL, METRES, INTRO_MS, snap, altitude, diamond, veil, sweep, approach} = require('../record/record.js');
+const {CELL, METRES, INTRO_MS, snap, tick, altitude, diamond, veil, sweep, approach} = require('../record/record.js');
 
 assert.strictEqual(CELL, 31, 'ruler matches the entrance cell');
 assert(INTRO_MS <= 2000, 'opening stays under 2 s');
@@ -28,6 +28,12 @@ assert.strictEqual(snap(0), 0);
 assert.strictEqual(snap(30.9), 0);
 assert.strictEqual(snap(31), 31);
 assert.strictEqual(snap(-1), -31);
+// The altimeter snaps to the nearest ruler tick, so its reading always matches a tick on the ruler.
+assert.strictEqual(tick(0), 0);
+assert.strictEqual(tick(15), 0);
+assert.strictEqual(tick(16), 31);
+assert.strictEqual(tick(46), 31);
+for (let y = 0; y < 2000; y += 7) assert.strictEqual(tick(y) % CELL, 0, 'mark sits on a tick');
 assert.strictEqual(altitude(3100, 3100), '0000');
 assert.strictEqual(altitude(0, 3100), String(100 * METRES).padStart(4, '0'));
 assert.strictEqual(altitude(3100 - 31, 3100), '0010');

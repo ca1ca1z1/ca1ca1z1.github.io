@@ -16,6 +16,24 @@ body{overflow-x:hidden}
 .veil{z-index:20}
 .bar,main,.end{position:relative;z-index:1}
 
+/* Page-anchored layers (scroll with the text, no lag): the ruler canvas and the altimeter/bracket. */
+.ruler{position:absolute;left:0;top:0;z-index:0;pointer-events:none}
+.marks{position:absolute;left:0;top:0;width:100%;height:0;z-index:0;pointer-events:none}
+.mk,.lk{position:absolute;left:0;top:0;width:100%;height:0;display:none}
+.mk.on,.lk.on{display:block}
+.mk-guide{position:absolute;top:0;left:calc(var(--rail) - 8px);width:max(0px,calc(var(--x) - var(--rail) - 12px));height:1px;
+  background:repeating-linear-gradient(90deg,rgb(16 16 16 / .28) 0 3px,transparent 3px 6px)}
+.mk-tick{position:absolute;top:-1px;left:calc(var(--rail) - 26px);width:28px;height:2px;background:var(--orange)}
+.mk-x{position:absolute;left:var(--x);top:-15px;width:31px;height:31px;
+  background:linear-gradient(var(--orange),var(--orange)) 0 15px/7px 1px no-repeat,
+    linear-gradient(var(--orange),var(--orange)) 24px 15px/7px 1px no-repeat,
+    linear-gradient(var(--orange),var(--orange)) 15px 0/1px 7px no-repeat,
+    linear-gradient(var(--orange),var(--orange)) 15px 24px/1px 7px no-repeat}
+.mk-read,.lk-read{position:absolute;right:calc(100% - var(--rail) + 28px);top:-11px;height:22px;padding:0 5px;
+  background:var(--ink);color:var(--paper);font:700 14px/22px var(--sans);white-space:nowrap}
+.lk-b{position:absolute;left:calc(var(--rail) - 4px);top:0;bottom:0;width:10px;border:2px solid var(--orange);border-right:0}
+@media(max-width:600px){.mk-read{right:auto;left:calc(var(--x) + 34px);top:7px}.lk-read{display:none}}
+
 /* Letterbox: the page bar and the closing band are the black bars of the frame. */
 .bar{background:var(--ink);color:var(--paper);border-bottom:3px solid var(--orange)}
 .end{height:62px;margin-top:124px;background:var(--ink)}

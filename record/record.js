@@ -4,26 +4,31 @@
    - background: three trajectory arcs; scrolling swings them around an off-screen pivot (ascent)
    - altitude ruler on the left, ticked every 31px cell of page height (one cell = 10 m, 0000 at the
      bottom band, the "ground")
-   - pointer: an altimeter mark — crosshair on the pointer's cell, a guide back to the ruler, the
-     reading boxed on the ruler — jumping whole cells
+   - pointer: an altimeter mark on the ruler tick nearest the pointer — reading boxed on the ruler,
+     a guide out to a crosshair on the pointer's column — jumping whole cells
    - entry selection (hover or keyboard focus): an orange bracket spans the entry on the ruler, with
      its altitude; the slab itself is CSS
    - click / tap / keyboard focus: diamonds (Manhattan rings) step outward cell by cell
+   Layers. The ruler is a canvas in page coordinates and the altimeter and bracket are small elements
+   in page coordinates, so all three scroll with the text natively, with no frame of lag. Only the
+   arcs and diamonds live on the fixed canvas, which redraws only while they move.
    Two tiers. Full: everything above. Reduced (prefers-reduced-motion): no opening, no arc swing, no
-   diamonds; the altimeter mark and the bracket remain and are placed instantly.
-   Pure canvas, no dependencies. Sleeps when nothing moves. */
+   diamonds; the altimeter mark and the bracket remain.
+   No dependencies. Sleeps when nothing moves. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.RecordScene = factory();
 })(typeof window !== 'undefined' ? window : this, function () {
   'use strict';
   const CELL = 31, METRES = 10, INTRO_MS = 1600, RINGS = 6, RING_STEP = 45, RING_LIFE = 420;
-  const INK = '16,16,16', ACID = '200,214,58', ORANGE = '255,90,31', PAPER = '229,228,215';
+  const INK = '16,16,16', ACID = '200,214,58', ORANGE = '255,90,31';
   const clamp = x => Math.max(0, Math.min(1, x));
   const out = x => 1 - Math.pow(1 - clamp(x), 3);
 
   // Top edge of the page cell that contains document y.
   const snap = y => Math.floor(y / CELL) * CELL;
+  // Ruler tick nearest document y (ticks sit on cell edges, every CELL px).
+  const tick = y => Math.round(y / CELL) * CELL;
   // Altitude reading at document y on a page of height pageH: whole cells above the bottom, 10 m each.
   function altitude(y, pageH) {
     return String(Math.max(0, Math.floor((pageH - y) / CELL)) * METRES).padStart(4, '0');
@@ -49,47 +54,73 @@
   function approach(value, goal, rate, epsilon = .3) {
     return Math.abs(goal - value) < epsilon ? goal : value + (goal - value) * rate;
   }
-  const api = {CELL, METRES, INTRO_MS, snap, altitude, diamond, veil, sweep, approach};
+  const api = {CELL, METRES, INTRO_MS, snap, tick, altitude, diamond, veil, sweep, approach};
   if (typeof document === 'undefined') return api;
 
   const html = document.documentElement;
-  const scene = document.querySelector('.scene'), veilEl = document.querySelector('.veil');
-  const ctx = scene && scene.getContext('2d'), vtx = veilEl && veilEl.getContext('2d');
-  if (!ctx || !vtx) { html.classList.remove('is-intro'); return api; }
+  const scene = document.querySelector('.scene'), veilEl = document.querySelector('.veil'), rulerEl = document.querySelector('.ruler');
+  const ctx = scene && scene.getContext('2d'), vtx = veilEl && veilEl.getContext('2d'), rtx = rulerEl && rulerEl.getContext('2d');
+  if (!ctx || !vtx || !rtx) { html.classList.remove('is-intro'); return api; }
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const rgba = (rgb, a) => `rgba(${rgb},${a})`;
   const SANS = '"Helvetica Neue", Helvetica, Arial, sans-serif';
 
+  // Altimeter and bracket: page-anchored elements (see record.css).
+  const marks = document.createElement('div');
+  marks.className = 'marks'; marks.setAttribute('aria-hidden', 'true');
+  marks.innerHTML = '<div class="mk"><i class="mk-guide"></i><i class="mk-tick"></i><i class="mk-x"></i><b class="mk-read"></b></div>' +
+    '<div class="lk"><i class="lk-b"></i><b class="lk-read"></b></div>';
+  rulerEl.after(marks);
+  const mk = marks.querySelector('.mk'), mkRead = marks.querySelector('.mk-read');
+  const lk = marks.querySelector('.lk'), lkRead = marks.querySelector('.lk-read');
+
   let w = 0, h = 0, rail = 88, pageH = 0, raf = 0;
   let introOn = html.classList.contains('is-intro') && !reduce.matches, t0 = -1;
-  let angle = 0, goal = 0, rings = [];
+  let angle = 0, goal = 0, rings = [], lockEl = null, mkY = NaN, mkX = NaN;
   const pointer = {x: 0, y: 0, on: false};
-  // Altimeter mark: eased viewport centre (x, y) of the pointer's cell; a = visibility.
-  const mark = {x: 0, y: 0, tx: 0, ty: 0, a: 0, ta: 0, placed: false};
-  // Bracket for the selected entry: eased top/bottom (viewport), visibility.
-  const lock = {t: 0, b: 0, tt: 0, tb: 0, a: 0, ta: 0, el: null};
-  if (!introOn) html.classList.remove('is-intro');
+  if (!introOn) { html.classList.remove('is-intro'); veilEl.hidden = true; }
 
-  function size(c, x) {
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
-    x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  function fit(c, x, cw, ch, d) {
+    c.width = Math.round(cw * d); c.height = Math.round(ch * d);
+    c.style.width = cw + 'px'; c.style.height = ch + 'px';
+    x.setTransform(d, 0, 0, d, 0, 0);
   }
   function resize() {
     w = innerWidth; h = innerHeight;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
     rail = parseFloat(getComputedStyle(html).getPropertyValue('--rail')) || 88;
-    pageH = document.documentElement.scrollHeight;
-    size(scene, ctx); size(veilEl, vtx);
-    if (lock.el) lockTo(lock.el, true);
-    if (mark.placed) markTo(pointer.x, pointer.y, true);
-    draw(performance.now());
+    const end = document.querySelector('.end');
+    pageH = Math.ceil(end ? end.getBoundingClientRect().bottom + scrollY : html.scrollHeight);
+    fit(scene, ctx, w, h, dpr);
+    if (introOn) fit(veilEl, vtx, w, h, dpr);
+    fit(rulerEl, rtx, rail, pageH, Math.min(dpr, 16000 / pageH));   // stay under canvas size limits
+    drawRuler(introOn ? (t0 < 0 ? 0 : veil(performance.now() - t0, h).ruler) : 1);
+    mkY = mkX = NaN;
+    if (lockEl) lockTo(lockEl);
+    markTo();
+    drawScene(performance.now());
   }
 
-  // Trajectory arcs: circles whose centres orbit a pivot below the viewport; the scroll swing moves
-  // them across the page. Ink hairlines and one acid line with travelling ticks.
+  // Ruler, in page coordinates: drawn once, scrolls with the page. The opening reveals it downward
+  // from the top of the viewport a cell at a time.
+  function drawRuler(reveal) {
+    rtx.clearRect(0, 0, rail, pageH);
+    if (reveal <= 0) return;
+    const rx = rail - 12, wide = rail >= 64;
+    const limit = reveal >= 1 ? pageH : scrollY + Math.min(h, snap(h * reveal + CELL));
+    rtx.fillStyle = rgba(INK, .8); rtx.fillRect(rx, 0, 1, limit);
+    rtx.font = `700 14px ${SANS}`; rtx.textAlign = 'right'; rtx.textBaseline = 'middle';
+    for (let i = 0, y = 0; y <= limit; i++, y += CELL) {
+      const major = i % 5 === 0;
+      rtx.fillStyle = rgba(INK, major ? .8 : .45);
+      rtx.fillRect(rx - (major ? 12 : 6), y, major ? 12 : 6, 1);
+      if (major && wide) { rtx.fillStyle = rgba(INK, .62); rtx.fillText(altitude(y, pageH), rx - 18, y); }
+    }
+  }
+
+  // Trajectory arcs: circles whose centres orbit a pivot beyond the lower right; the scroll swing
+  // moves them across the page. Ink hairlines and one acid line with travelling ticks.
   function arcs(a, reveal) {
-    // Base circle: centre beyond the lower right, passing the lower-left corner region and the top
-    // edge near the middle — the rising sweep of the PV's trajectory lines.
     const px = w * 1.3, py = h * 1.2, r0 = Math.hypot(w * 1.15, h * .2), off = Math.min(w, h) * .3;
     const lines = [
       {r: r0, rgb: INK, al: .18, lw: 1.5},
@@ -113,61 +144,12 @@
     }
   }
 
-  // Boxed reading, PV style: black box, paper type.
-  function reading(text, x, y, align) {
-    ctx.font = `700 14px ${SANS}`; ctx.textBaseline = 'middle';
-    const tw = ctx.measureText(text).width, bx = align === 'right' ? x - tw - 10 : x;
-    ctx.fillStyle = rgba(INK, 1); ctx.fillRect(Math.round(bx), Math.round(y - 11), Math.ceil(tw + 10), 22);
-    ctx.fillStyle = rgba(PAPER, 1); ctx.textAlign = 'left'; ctx.fillText(text, Math.round(bx + 5), Math.round(y) + 1);
-  }
-
-  function draw(now) {
+  // Fixed canvas: arcs and diamonds only.
+  function drawScene(now) {
     ctx.clearRect(0, 0, w, h);
-    const sy = scrollY, rx = rail - 12, wide = rail >= 64;
     const reveal = introOn ? (t0 < 0 ? 0 : veil(now - t0, h).ruler) : 1;
     if (reveal <= 0) return;
     arcs(reduce.matches ? 0 : angle, reveal);
-
-    // Ruler: doc-anchored ticks; the opening extends it downward a cell at a time.
-    const bottom = Math.min(h, snap(h * reveal + CELL));
-    ctx.fillStyle = rgba(INK, .8); ctx.fillRect(rx, 0, 1, bottom);
-    ctx.font = `700 14px ${SANS}`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    for (let i = Math.floor(sy / CELL); ; i++) {
-      const y = Math.round(i * CELL - sy);
-      if (y > bottom) break;
-      const major = i % 5 === 0;
-      ctx.fillStyle = rgba(INK, major ? .8 : .45);
-      ctx.fillRect(rx - (major ? 12 : 6), y, major ? 12 : 6, 1);
-      if (major && wide) { ctx.fillStyle = rgba(INK, .62); ctx.fillText(altitude(i * CELL, pageH), rx - 18, y); }
-    }
-
-    // Altimeter mark.
-    const ma = mark.a * reveal;
-    if (ma > .01) {
-      const x = Math.round(mark.x), y = Math.round(mark.y), g = 9;
-      ctx.fillStyle = rgba(INK, .28 * ma);
-      for (let gx = rx + 4; gx < x - CELL; gx += 6) ctx.fillRect(gx, y, 3, 1);   // dashed guide
-      ctx.fillStyle = rgba(ORANGE, ma);
-      ctx.fillRect(rx - 14, y - 1, 28, 2);                                        // ruler tick
-      ctx.fillRect(x - g - 7, y, 7, 1); ctx.fillRect(x + g + 1, y, 7, 1);         // crosshair
-      ctx.fillRect(x, y - g - 7, 1, 7); ctx.fillRect(x, y + g + 1, 1, 7);
-      ctx.globalAlpha = ma;
-      const text = altitude(y + sy, pageH);
-      if (wide) reading(text, rx - 16, y, 'right'); else reading(text, x + g + 12, y + 18, 'left');
-      ctx.globalAlpha = 1;
-    }
-
-    // Selection bracket on the ruler.
-    const la = lock.a * reveal;
-    if (la > .01) {
-      const t = Math.round(lock.t), b = Math.round(lock.b), x = rx + 8;
-      ctx.fillStyle = rgba(ORANGE, la);
-      ctx.fillRect(x, t, 2, b - t); ctx.fillRect(x, t, 10, 2); ctx.fillRect(x, b - 2, 10, 2);
-      ctx.globalAlpha = la;
-      if (wide) reading(altitude(t + sy, pageH), rx - 16, t + 11, 'right');
-      ctx.globalAlpha = 1;
-    }
-
     // Diamonds: ring R appears at R × RING_STEP ms and fades over RING_LIFE; the first and last are orange.
     rings = rings.filter(r => now - r.t0 < RINGS * RING_STEP + RING_LIFE);
     for (const r of rings) {
@@ -176,7 +158,7 @@
         if (age < 0 || age > RING_LIFE) continue;
         const edge = R === 1 || R === RINGS, f = 1 - age / RING_LIFE;
         ctx.strokeStyle = rgba(edge ? ORANGE : INK, (edge ? .9 : .3) * f * r.k); ctx.lineWidth = edge ? 2 : 1;
-        const v = diamond(r.x, r.y - sy, R);
+        const v = diamond(r.x, r.y - scrollY, R);
         ctx.beginPath(); ctx.moveTo(v[0][0], v[0][1]);
         for (let j = 1; j < 4; j++) ctx.lineTo(v[j][0], v[j][1]);
         ctx.closePath(); ctx.stroke();
@@ -186,7 +168,6 @@
 
   function drawVeil(v) {
     vtx.clearRect(0, 0, w, h);
-    if (v.done) return;
     vtx.fillStyle = '#101010';
     vtx.fillRect(0, 0, w, v.panel); vtx.fillRect(0, h - v.panel, w, v.panel);
     if (v.lineAlpha > 0) {
@@ -194,47 +175,48 @@
       vtx.fillStyle = rgba(ACID, v.lineAlpha); vtx.fillRect((w - L) / 2, Math.round(h / 2) - 1, L, 2);
     }
   }
+  // After the opening the veil leaves the page entirely: no full-screen layer stays composited.
+  function endIntro() {
+    introOn = false;
+    html.classList.remove('is-intro');
+    veilEl.hidden = true; veilEl.width = veilEl.height = 0;
+    drawRuler(1);
+  }
 
   function frame(now) {
     raf = 0;
     if (introOn) {
       if (t0 < 0) { t0 = now; veilEl.style.background = 'transparent'; }
       const v = veil(now - t0, h);
-      drawVeil(v);
-      if (v.done) { introOn = false; html.classList.remove('is-intro'); }
+      if (v.done) endIntro(); else { drawVeil(v); drawRuler(v.ruler); }
     }
-    // Reduced tier: values land on their goal in one frame, so nothing glides.
-    const k = rate => reduce.matches ? 1 : rate;
-    angle = approach(angle, reduce.matches ? 0 : goal, k(.12), .0005);
-    if (mark.placed) { mark.x = approach(mark.x, mark.tx, k(.3)); mark.y = approach(mark.y, mark.ty, k(.3)); }
-    mark.a = approach(mark.a, mark.ta, k(.2), .01);
-    lock.t = approach(lock.t, lock.tt, k(.3)); lock.b = approach(lock.b, lock.tb, k(.3));
-    lock.a = approach(lock.a, lock.ta, k(.2), .01);
-    draw(now);
-    const moving = angle !== (reduce.matches ? 0 : goal) || mark.x !== mark.tx || mark.y !== mark.ty || mark.a !== mark.ta ||
-      lock.t !== lock.tt || lock.b !== lock.tb || lock.a !== lock.ta;
-    if (introOn || rings.length || moving) raf = requestAnimationFrame(frame);
+    const g = reduce.matches ? 0 : goal;
+    angle = reduce.matches ? 0 : approach(angle, g, .25, .0005);
+    drawScene(now);
+    if (introOn || rings.length || angle !== g) raf = requestAnimationFrame(frame);
   }
   const wake = () => { if (!raf && !document.hidden) raf = requestAnimationFrame(frame); };
   const live = () => !reduce.matches;
 
-  // Pointer → centre of its page cell, in viewport coordinates.
-  function markTo(x, y, instant) {
-    const sy = scrollY;
-    mark.tx = Math.floor(x / CELL) * CELL + CELL / 2;
-    mark.ty = snap(y + sy) + CELL / 2 - sy;
-    if (!mark.placed || instant) { mark.x = mark.tx; mark.y = mark.ty; mark.placed = true; }
-    mark.ta = lock.el || !pointer.on ? 0 : 1;
+  // Altimeter: placed directly (no easing) on the ruler tick nearest the pointer; the crosshair
+  // takes the pointer's column. Writes only when the cell changes.
+  function markTo() {
+    if (!pointer.on || lockEl) { mk.classList.remove('on'); return; }
+    const y = tick(pointer.y + scrollY), x = Math.floor(pointer.x / CELL) * CELL;
+    if (y !== mkY) { mk.style.transform = `translateY(${y}px)`; mkRead.textContent = altitude(y, pageH); mkY = y; }
+    if (x !== mkX) { mk.style.setProperty('--x', x + 'px'); mkX = x; }
+    mk.classList.add('on');
   }
-  function lockTo(el, instant) {
-    const b = el.getBoundingClientRect();
-    lock.tt = b.top; lock.tb = b.bottom; lock.ta = 1;
-    if (instant || !lock.el || lock.a < .05) { lock.t = lock.tt; lock.b = lock.tb; }
-    lock.el = el; mark.ta = 0;
+  function lockTo(el) {
+    lockEl = el;
+    const b = el.getBoundingClientRect(), top = Math.round(b.top + scrollY);
+    lk.style.transform = `translateY(${top}px)`; lk.style.height = Math.round(b.height) + 'px';
+    lkRead.textContent = altitude(top, pageH);
+    lk.classList.add('on'); markTo();
   }
   function lockOff(el) {
-    if (lock.el !== el) return;
-    lock.el = null; lock.ta = 0; mark.ta = pointer.on ? 1 : 0;
+    if (lockEl !== el) return;
+    lockEl = null; lk.classList.remove('on'); markTo();
   }
   function ring(x, y, strength) {
     if (rings.length > 12) rings.shift();
@@ -245,30 +227,27 @@
   addEventListener('pointermove', e => {
     pointer.x = e.clientX; pointer.y = e.clientY;
     pointer.on = e.pointerType !== 'touch' || e.pressure > 0;
-    markTo(e.clientX, e.clientY); wake();
+    markTo();
   }, {passive: true});
   addEventListener('pointerdown', e => {
     pointer.x = e.clientX; pointer.y = e.clientY; pointer.on = true;
-    markTo(e.clientX, e.clientY, e.pointerType === 'touch');
+    markTo();
     if (live()) ring(e.clientX, e.clientY, 1);
-    wake();
   }, {passive: true});
-  addEventListener('pointerup', e => { if (e.pointerType === 'touch') { pointer.on = false; mark.ta = 0; wake(); } }, {passive: true});
-  html.addEventListener('pointerleave', () => { pointer.on = false; mark.ta = 0; wake(); });
+  addEventListener('pointerup', e => { if (e.pointerType === 'touch') { pointer.on = false; markTo(); } }, {passive: true});
+  html.addEventListener('pointerleave', () => { pointer.on = false; markTo(); });
 
   addEventListener('scroll', () => {
-    goal = sweep(scrollY);
-    if (mark.placed) markTo(pointer.x, pointer.y, true);   // the mark re-reads its cell as the page moves
-    if (lock.el) lockTo(lock.el, true);
-    wake();
+    markTo();                                   // the mark re-reads the tick under a still pointer
+    if (live()) { goal = sweep(scrollY); wake(); }
   }, {passive: true});
 
   // Entry selection: hover and keyboard focus share one response.
   document.querySelectorAll('.log li').forEach(li => {
-    li.addEventListener('pointerenter', () => { lockTo(li); wake(); });
-    li.addEventListener('pointerleave', () => { if (!li.matches(':focus-within')) { lockOff(li); wake(); } });
-    li.addEventListener('focusin', () => { if (li.querySelector(':focus-visible') || li.matches(':focus-visible')) { lockTo(li); wake(); } });
-    li.addEventListener('focusout', e => { if (!li.contains(e.relatedTarget)) { lockOff(li); wake(); } });
+    li.addEventListener('pointerenter', () => lockTo(li));
+    li.addEventListener('pointerleave', () => { if (!li.matches(':focus-within')) lockOff(li); });
+    li.addEventListener('focusin', () => { if (li.querySelector(':focus-visible') || li.matches(':focus-visible')) lockTo(li); });
+    li.addEventListener('focusout', e => { if (!li.contains(e.relatedTarget)) lockOff(li); });
   });
   // Keyboard parity for the diamonds: focusing anything sends a small set from its centre.
   document.addEventListener('focusin', e => {
@@ -279,13 +258,15 @@
 
   addEventListener('resize', resize);
   addEventListener('load', resize);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && (introOn || rings.length)) wake(); });
   reduce.addEventListener?.('change', () => {
     rings = [];
-    if (introOn) { introOn = false; html.classList.remove('is-intro'); vtx.clearRect(0, 0, w, h); veilEl.style.background = 'transparent'; }
-    wake();
+    if (introOn) endIntro();
+    goal = angle = reduce.matches ? 0 : sweep(scrollY);
+    drawScene(performance.now());
   });
   goal = angle = reduce.matches ? 0 : sweep(scrollY);
-  resize(); wake();
+  resize();
+  if (introOn) wake();
   return api;
 });
