@@ -3,7 +3,7 @@
    left and acid-yellow trajectory lines (both drawn by record.js). Orange answers the visitor. */
 :root{
   color-scheme:light;
-  --bg:#e5e4d7;--fg:#101010;--ink:#101010;--paper:#e5e4d7;--muted:#4a4943;--dim:#bdbcb0;
+  --bg:#e5e4d7;--fg:#101010;--ink:#101010;--paper:#e5e4d7;--muted:#4a4943;--quote:#65645c;--dim:#bdbcb0;
   --acid:#c8d63a;--orange:#ff5a1f;
   --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;--mono:ui-monospace,Consolas,"Courier New",monospace;
   --edge:48px;--rail:88px;--focus:var(--orange);
@@ -41,15 +41,16 @@ main{max-width:1180px;padding:62px var(--edge) 0 calc(var(--rail) + 24px)}
 main:focus{outline:none}
 
 /* Title block: index mark, a large grotesk title, a credit block like a PV title card. */
-.head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:24px 48px;padding-bottom:40px;border-bottom:6px solid var(--ink)}
+.head{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;padding-bottom:40px;border-bottom:6px solid var(--ink)}
 .idx{grid-column:1/-1;margin:0;font:700 28px/1 var(--sans)}
 .idx::after,.no::after{content:'';display:inline-block;width:7px;height:7px;margin-left:4px;vertical-align:top;background:var(--ink);box-shadow:0 10px 0 var(--acid)}
 .head h1{margin:0;overflow:hidden;font:700 clamp(64px,14vw,160px)/.86 var(--sans);letter-spacing:-.05em;padding:0 .04em .04em 0}
 .head h1 span{display:block}
-.credit{max-width:360px}
-.credit blockquote{margin:0;padding-left:14px;border-left:3px solid var(--acid);font:italic 400 19px/1.45 var(--sans);letter-spacing:-.005em}
-.credit blockquote p{margin:0}
-@media(max-width:860px){.head{grid-template-columns:minmax(0,1fr)}}
+/* Quotation: a quiet single line under the title, like a PV caption. Wraps only on narrow screens. */
+.credit{margin:0;justify-self:start;padding-left:12px;border-left:2px solid var(--acid);color:var(--quote);
+  font:italic 400 15px/1.5 var(--sans);letter-spacing:.01em;white-space:nowrap}
+.credit p{margin:0}
+@media(max-width:600px){.credit{white-space:normal}}
 
 /* Section: two redaction bars over a black slab heading. */
 .part{margin-top:93px}
