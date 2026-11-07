@@ -25,8 +25,8 @@ The site's signature, set by the entrance, is front-end animation written entire
 - `field.js` — home background: interactive cell lattice (pointer lens, selection rails, click, wheel, focus, idle). Starts after the entrance ends. Implements both motion tiers.
 - `tools/stamp.cjs` — writes content-hash `?v=` versions onto asset references.
 - `work/`, `experience/`, `capability/`, `record/` — one page each, each with its **own visual style** in its own stylesheet. Do not unify them.
-  - Work: exhibition catalogue (paper, serif). Experience: signal-blue timeline. Capability: green instrument readout on graph paper. Record: operator file after an event PV — letterboxed black bands, warm paper, tight bold grotesk, black slabs with reversed type, acid-yellow (`#c8d63a`) trajectory arcs, altitude ruler.
-- A page may have its own opening and background script (e.g. `record/record.js`). Openings stay under 2 s, play only in the full motion tier, never hide content when scripts fail, and follow the same tier, performance and testing rules as `field.js`.
+  - Work: exhibition catalogue (paper, serif). Experience: blueprint plate after an event PV — grey-blue drafting paper with a 62px dot grid, cobalt (`#1d44c8`) construction lines, didone display serif with mirrored capitals, numbered plates on a rig line; pointer compass, cobalt flood with echo frames, halo that breaks into shards, datamosh tear opening. Capability: green instrument readout on graph paper. Record: operator file after an event PV — letterboxed black bands, warm paper, tight bold grotesk, black slabs with reversed type, acid-yellow (`#c8d63a`) trajectory arcs, altitude ruler.
+- A page may have its own opening and background script (e.g. `record/record.js`, `experience/experience.js`). Openings stay under 2 s, play only in the full motion tier, never hide content when scripts fail, and follow the same tier, performance and testing rules as `field.js`.
 - `assets/base.css` — shared structure only (reset, page bar, focus, skip link). No page colours here; pages set `--bg`, `--fg`, `--focus`, `--edge`.
 - `entrance.js`, `entrance-scene.js`, `entrance.css` — opening animation; plays on the home page only. Do not change its choreography unless asked.
 - `404.html` — standalone; keep as is.
@@ -52,5 +52,6 @@ node tools/stamp.cjs
 node tests/entrance.test.cjs
 node tests/field.test.cjs
 node tests/record.test.cjs
+node tests/experience.test.cjs
 node tests/site.test.cjs
 ```
