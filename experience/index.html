@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Experience · Yuning Cai</title>
 <link rel="stylesheet" href="../assets/base.css?v=72b8038c">
-<link rel="stylesheet" href="./experience.css?v=52aa0756">
+<link rel="stylesheet" href="./experience.css?v=ee709064">
 <!-- Opening plays only in the full motion tier; set before first paint so content never flashes. -->
 <script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('is-intro')</script>
-<script src="./experience.js?v=ef0ff691" defer></script>
+<script src="./experience.js?v=2016a315" defer></script>
 </head>
 <body>
 <canvas class="field" aria-hidden="true"></canvas>
@@ -24,30 +24,41 @@
     <h1>Experience</h1>
   </header>
 
-  <!-- Timeline, newest first. One <li> per entry; id = evidence code. -->
-  <ol class="log">
-    <li id="E-01" tabindex="0" style="--i:0">
-      <span class="joint" aria-hidden="true">1</span>
-      <p class="code">E-01 · <time>2026.06 — 2026.07</time></p>
-      <h2>AU Optronics</h2>
-      <p class="role">Business Process Automation Intern · Suzhou, China</p>
-      <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
-    </li>
-    <li id="E-02" tabindex="0" style="--i:1">
-      <span class="joint" aria-hidden="true">2</span>
-      <p class="code">E-02 · <time>2024.09 — 2025.06</time></p>
-      <h2>Crestwood Preparatory College</h2>
-      <p class="role">Mathematics Peer Tutor · Toronto, ON</p>
-      <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
-    </li>
-    <li id="E-03" tabindex="0" style="--i:2">
-      <span class="joint" aria-hidden="true">3</span>
-      <p class="code">E-03 · <time>2024.08</time></p>
-      <h2>Oxford ML Seminar</h2>
-      <p class="role">Student Researcher · Oxford, UK</p>
-      <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
-    </li>
-  </ol>
+  <!-- Two groups, each newest first. One <li> per entry; id = evidence code (E-01, E-02, … across groups).
+       Professional plates are "inked": heavy frame, cobalt code tab, a construction seal, solid rig.
+       Other plates are "draft": dashed frame, lighter type, hollow dashed joints, dashed rig. -->
+  <section class="group pro" aria-labelledby="g-pro">
+    <h2 id="g-pro" class="group-h">Professional</h2>
+    <ol class="log">
+      <li id="E-01" tabindex="0" style="--i:0">
+        <span class="joint" aria-hidden="true">1</span>
+        <p class="code">E-01 · <time>2026.06 — 2026.07</time></p>
+        <h3>AU Optronics</h3>
+        <p class="role">Business Process Automation Intern · Suzhou, China</p>
+        <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
+      </li>
+    </ol>
+  </section>
+
+  <section class="group draft" aria-labelledby="g-oth">
+    <h2 id="g-oth" class="group-h">Academic and Community</h2>
+    <ol class="log">
+      <li id="E-02" tabindex="0" style="--i:1">
+        <span class="joint" aria-hidden="true">2</span>
+        <p class="code">E-02 · <time>2024.09 — 2025.06</time></p>
+        <h3>Crestwood Preparatory College</h3>
+        <p class="role">Mathematics Peer Tutor · Toronto, ON</p>
+        <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
+      </li>
+      <li id="E-03" tabindex="0" style="--i:2">
+        <span class="joint" aria-hidden="true">3</span>
+        <p class="code">E-03 · <time>2024.08</time></p>
+        <h3>Oxford ML Seminar</h3>
+        <p class="role">Student Researcher · Oxford, UK</p>
+        <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
+      </li>
+    </ol>
+  </section>
 </main>
 <div class="end" aria-hidden="true"></div>
 </body>

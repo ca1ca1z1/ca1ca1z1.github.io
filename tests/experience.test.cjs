@@ -1,6 +1,6 @@
 // Experience page motion: grid nodes, opening timeline and tear bands, echo, shards, smear.
 const assert = require('assert');
-const {CELL, NODE, OFF, INTRO_MS, TEAR_MS, node, rng, bands, intro, tearAt, echo, shards, smear} = require('../experience/experience.js');
+const {CELL, NODE, OFF, INTRO_MS, TEAR_MS, HALO, HALO_MS, node, rng, bands, intro, tearAt, echo, haloPhase, shards, smear} = require('../experience/experience.js');
 
 assert.strictEqual(CELL, 31, 'grid matches the entrance cell');
 assert.strictEqual(NODE, 2 * CELL, 'dot every two cells');
@@ -52,10 +52,21 @@ assert.strictEqual(echo(0, 3), 21);
 assert.strictEqual(echo(320, 3), 0);
 assert(echo(100, 2) < echo(0, 2));
 
-// Shards: deterministic, shed from the ring's left side, drifting left.
+// Halo phases follow the PV: outline → inverted beat → solid → shatter, then gone.
+assert.strictEqual(haloPhase(0), 'outline');
+assert.strictEqual(haloPhase(80), 'invert');
+assert.strictEqual(haloPhase(150), 'solid');
+assert.strictEqual(haloPhase(400), 'shatter');
+assert.strictEqual(haloPhase(HALO_MS), null);
+assert.strictEqual(haloPhase(-1), null);
+// Shards: deterministic irregular polygons, all within the crumbled (left) arc, drifting outward.
 const s1 = shards(), s2 = shards();
 assert.deepStrictEqual(s1, s2);
-for (const s of s1) { assert(s.a > Math.PI * .5 && s.a < Math.PI * 1.3); assert(s.dx < 0); }
+for (const s of s1) {
+  assert(s.a >= HALO.gap[0] && s.a <= HALO.gap[1], 'shard sits in the gap');
+  assert(s.pts.length >= 4 && s.pts.length <= 6, 'irregular polygon');
+  assert(s.drift > 0);
+}
 
 // Smear length grows with speed, within bounds.
 assert.strictEqual(smear(0), 40);
