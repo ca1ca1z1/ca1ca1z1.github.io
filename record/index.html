@@ -5,43 +5,66 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Record · Yuning Cai</title>
 <link rel="stylesheet" href="../assets/base.css?v=72b8038c">
-<link rel="stylesheet" href="./record.css?v=0a117a82">
+<link rel="stylesheet" href="./record.css?v=010d0e57">
+<!-- Opening plays only in the full motion tier; set before first paint so content never flashes. -->
+<script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('is-intro')</script>
+<script src="./record.js?v=86bae5ea" defer></script>
 </head>
 <body>
+<canvas class="scene" aria-hidden="true"></canvas>
+<canvas class="veil" aria-hidden="true"></canvas>
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar"><a href="../capability/">← Capability</a><span class="here">04 / Record</span><a href="../">Index →</a></header>
 
 <main id="main">
-  <!-- Filed document: typewriter type on archival paper. -->
-  <article class="sheet">
-    <header class="head">
-      <h1>Record</h1>
-      <dl>
-        <dt>Subject</dt><dd>Yuning Cai</dd>
-        <dt>Program</dt><dd>BASc Computer Engineering, University of Toronto</dd>
-      </dl>
-    </header>
+  <!-- Operator file after an event PV: letterboxed paper, black slabs, altitude ruler on the left (canvas). -->
+  <header class="head">
+    <p class="idx" aria-hidden="true">04</p>
+    <h1><span>Record</span></h1>
+    <dl class="credit">
+      <dt>Subject</dt><dd>Yuning Cai</dd>
+      <dt>Program</dt><dd>BASc Computer Engineering, University of Toronto</dd>
+    </dl>
+  </header>
 
-    <section>
-      <h2>A. Publication</h2>
-      <ol>
-        <li>
-          <time>2024</time>
-          <p>Evaluating the Generalizability of Machine Learning Models for Seismic Data Prediction Across Different Regions. <i>Proceedings of DAML 2024</i>, pp. 106–114.
-          <a href="https://doi.org/10.5220/0013509700004619">doi:10.5220/0013509700004619</a></p>
-        </li>
-      </ol>
-    </section>
+  <section class="part" aria-labelledby="s-pub">
+    <div class="redact" aria-hidden="true"><b></b><b></b></div>
+    <h2 id="s-pub"><span class="k" aria-hidden="true">A</span>Publication</h2>
+    <ol class="log">
+      <li tabindex="0" style="--i:0">
+        <span class="no" aria-hidden="true">01</span>
+        <div class="body">
+          <p class="kind">DAML 2024 · pp. 106–114</p>
+          <h3>Evaluating the Generalizability of Machine Learning Models for Seismic Data Prediction Across Different Regions</h3>
+          <p class="meta"><a href="https://doi.org/10.5220/0013509700004619">doi:10.5220/0013509700004619</a></p>
+        </div>
+        <time datetime="2024">2024</time>
+      </li>
+    </ol>
+  </section>
 
-    <section>
-      <h2>B. Honours and competitions</h2>
-      <ol>
-        <li><time>2025</time><p>Dean’s Honours List, University of Toronto</p></li>
-        <li><time>2022</time><p>Canadian Computing Competition, Junior — 65/75</p></li>
-        <li><time>—</time><p>USACO, Silver division</p></li>
-      </ol>
-    </section>
-  </article>
+  <section class="part" aria-labelledby="s-hon">
+    <div class="redact" aria-hidden="true"><b></b><b></b></div>
+    <h2 id="s-hon"><span class="k" aria-hidden="true">B</span>Honours and competitions</h2>
+    <ol class="log">
+      <li tabindex="0" style="--i:1">
+        <span class="no" aria-hidden="true">02</span>
+        <div class="body"><p class="kind">Honour</p><h3>Dean’s Honours List</h3><p class="meta">University of Toronto</p></div>
+        <time datetime="2025">2025</time>
+      </li>
+      <li tabindex="0" style="--i:2">
+        <span class="no" aria-hidden="true">03</span>
+        <div class="body"><p class="kind">Competition</p><h3>Canadian Computing Competition, Junior</h3><p class="meta">65 / 75</p></div>
+        <time datetime="2022">2022</time>
+      </li>
+      <li tabindex="0" style="--i:3">
+        <span class="no" aria-hidden="true">04</span>
+        <div class="body"><p class="kind">Competition</p><h3>USACO</h3><p class="meta">Silver division</p></div>
+        <time>—</time>
+      </li>
+    </ol>
+  </section>
 </main>
+<div class="end" aria-hidden="true"></div>
 </body>
 </html>

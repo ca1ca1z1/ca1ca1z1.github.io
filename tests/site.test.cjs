@@ -55,7 +55,7 @@ function codes(file, prefix) {
 }
 const work = codes('work/index.html', 'P'), exp = codes('experience/index.html', 'E');
 const skills = [...read('capability/index.html').matchAll(/<tr><(?:th scope="row"[^>]*>[^<]*<\/th><)?td>/g)].length;
-const records = [...read('record/index.html').matchAll(/<li>/g)].length;
+const records = [...read('record/index.html').matchAll(/<li[\s>]/g)].length;
 
 // Home index counts match the pages they describe.
 const count = slug => Number(home.match(new RegExp('href="\\./' + slug + '/"[\\s\\S]*?class="c">(\\d+)'))[1]);
