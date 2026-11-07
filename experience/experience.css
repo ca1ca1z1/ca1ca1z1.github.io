@@ -1,27 +1,101 @@
-/* Experience — signal blue field, heavy sans, a single timeline rail. */
+/* Experience — a blueprint plate after an event PV: grey-blue drafting paper with a dot grid,
+   cobalt construction lines, a didone display serif with mirrored capitals scattered behind,
+   numbered specimens on a rig line. Selection floods a plate with cobalt (canvas adds the echo
+   trail); the pointer drives a drafting compass (experience.js). Orange marks focus. */
 :root{
-  color-scheme:dark;
-  --bg:#182bff;--fg:#ffffff;--muted:#d5d9ff;--rule:#5a68ff;--hit:#a3ff77;
-  --mono:ui-monospace,Consolas,"Courier New",monospace;
-  --edge:48px;--focus:#ffffff;
+  color-scheme:light;
+  --bg:#cdd4d4;--fg:#101418;--paper:#cdd4d4;--plate:rgb(205 212 212 / .94);--cobalt:#1d44c8;--muted:#3c4650;--reverse:#e8eded;
+  --line:rgb(29 68 200 / .5);--orange:#ff5a1f;
+  --serif:"Bodoni MT","Bodoni 72",Didot,"Didot LT STD",Georgia,"Times New Roman",serif;
+  --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;--mono:ui-monospace,Consolas,"Courier New",monospace;
+  --edge:48px;--rig:72px;--focus:var(--orange);
 }
-@media(max-width:600px){:root{--edge:20px}}
+@media(max-width:600px){:root{--edge:16px;--rig:40px}}
 
-.bar{border-bottom:1px solid var(--rule)}
-main{padding:0 var(--edge) 120px}
-h1{margin:64px 0 72px;font:800 clamp(40px,10.5vw,152px)/.88 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-.045em;text-transform:uppercase}
+/* Dot grid in page coordinates (scrolls natively): one dot every 62px (two 31px cells), centred
+   in each tile, so nodes sit at 31 + 62k. experience.js snaps to the same nodes. */
+body{overflow-x:hidden;
+  background:radial-gradient(circle at 31px 31px,rgb(29 68 200 / .38) 1.1px,transparent 1.6px) 0 0/62px 62px,var(--bg)}
+.field,.veil{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+.field{z-index:0}
+.veil{z-index:20}
+.bar,main,.end{position:relative;z-index:1}
+.bar{border-bottom:1px solid var(--line);background:var(--plate)}
+.bar a{color:var(--fg)}
+.end{height:124px}
 
-.log{list-style:none;margin:0;padding:0;border-top:2px solid var(--fg)}
-.log li{display:grid;grid-template-columns:240px minmax(0,1fr);gap:32px;padding:32px 0;border-bottom:1px solid var(--rule);scroll-margin-top:32px;position:relative}
-.log time{font:500 15px/1.5 var(--mono);letter-spacing:.02em;padding-left:24px;position:relative}
-.log time::before{content:'';position:absolute;left:0;top:.45em;width:11px;height:11px;background:var(--fg)}
-.log h2{margin:0;font:700 clamp(26px,3vw,40px)/1.1 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-.02em}
-.role{margin:8px 0 20px;color:var(--muted)}
-.log dl{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 16px;margin:0;max-width:720px}
-.log dt{font:500 14px/1.7 var(--mono);color:var(--muted)}
+main{max-width:1180px;padding:62px var(--edge) 0 calc(var(--edge) + var(--rig))}
+main:focus{outline:none}
+
+/* Mirrored serif capitals, faint, behind everything (decoration only). */
+.glyphs{position:absolute;inset:0;overflow:hidden;z-index:-1;pointer-events:none}
+.glyphs b{position:absolute;font:400 clamp(120px,18vw,260px)/1 var(--serif);color:rgb(29 68 200 / .09)}
+.glyphs b:nth-child(1){left:58%;top:-10px;transform:scaleX(-1)}
+.glyphs b:nth-child(2){left:84%;top:260px;transform:rotate(90deg)}
+.glyphs b:nth-child(3){left:-2%;top:520px;transform:scaleY(-1)}
+.glyphs b:nth-child(4){left:70%;top:760px;transform:scaleX(-1)}
+.glyphs b:nth-child(5){left:30%;top:1040px;transform:rotate(-90deg)}
+
+/* Title: display serif on a construction line that ends in a node. */
+.head{position:relative;margin-bottom:62px;padding-bottom:22px;border-bottom:1px solid var(--cobalt)}
+.head::after{content:'';position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;border:1px solid var(--cobalt);border-radius:50%;background:var(--paper)}
+.head h1{margin:0;font:400 clamp(56px,12vw,168px)/.92 var(--serif);letter-spacing:-.02em}
+
+/* Rig: a vertical line with one numbered joint per entry, a leader into each plate. */
+.log{position:relative;list-style:none;margin:0;padding:0;display:grid;gap:31px}
+.log::before{content:'';position:absolute;left:calc(var(--rig) * -.66);top:0;bottom:0;width:1px;background:var(--cobalt);transform-origin:top}
+.joint{position:absolute;left:calc(var(--rig) * -.66 - 13px);top:28px;width:26px;height:26px;display:grid;place-items:center;
+  border:1px solid var(--cobalt);border-radius:50%;background:var(--paper);color:var(--cobalt);font:700 14px/1 var(--mono)}
+.joint::after{content:'';position:absolute;left:100%;top:50%;width:calc(var(--rig) * .66 - 13px);height:1px;background:var(--cobalt)}
+
+/* Plate: near-solid paper over the grid, hairline cobalt frame with corner marks. */
+.log li{position:relative;isolation:isolate;padding:28px 32px 30px;scroll-margin-top:62px;
+  background:
+    linear-gradient(var(--cobalt),var(--cobalt)) 0 0/12px 2px no-repeat,linear-gradient(var(--cobalt),var(--cobalt)) 0 0/2px 12px no-repeat,
+    linear-gradient(var(--cobalt),var(--cobalt)) 100% 100%/12px 2px no-repeat,linear-gradient(var(--cobalt),var(--cobalt)) 100% 100%/2px 12px no-repeat,
+    var(--plate);
+  box-shadow:inset 0 0 0 1px var(--line);transition:color .24s}
+.log li::before{content:'';position:absolute;inset:0;z-index:-1;background:var(--cobalt);transform:scaleY(0);transform-origin:bottom;
+  transition:transform .26s cubic-bezier(.2,.8,.2,1)}
+.log li:focus{outline:none}
+.log li:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.log li:target{box-shadow:inset 0 0 0 1px var(--line),0 0 0 2px var(--orange)}
+
+.code{margin:0 0 10px;font:400 14px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--cobalt);transition:color .24s}
+.log h2{margin:0;font:700 clamp(24px,3vw,36px)/1.15 var(--sans);letter-spacing:-.02em}
+.role{margin:8px 0 18px;color:var(--muted);transition:color .24s}
+.log dl{display:grid;grid-template-columns:96px minmax(0,1fr);gap:6px 16px;margin:0;max-width:720px}
+.log dt{font:400 14px/1.7 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--cobalt);transition:color .24s}
 .log dd{margin:0}
 
-.log li:target time::before{background:var(--hit)}
-.log li:target h2{text-decoration:underline;text-decoration-color:var(--hit);text-decoration-thickness:3px;text-underline-offset:6px}
+/* Selection (hover or keyboard focus): the plate floods cobalt from its base, type reverses. */
+.log li:hover,.log li:focus-within{color:var(--reverse)}
+.log li:hover::before,.log li:focus-within::before{transform:none}
+.log li:hover :is(.code,.role,dt),.log li:focus-within :is(.code,.role,dt){color:var(--reverse)}
+.log li:hover .joint,.log li:focus-within .joint{background:var(--cobalt);color:var(--reverse)}
 
-@media(max-width:760px){.log li{grid-template-columns:minmax(0,1fr);gap:12px}}
+@media(max-width:600px){
+  .log li{padding:20px 18px 22px}
+  .log dl{grid-template-columns:80px minmax(0,1fr)}
+}
+
+/* Opening (full motion tier only; experience.js removes .is-intro after 1.5 s). The canvas veil
+   draws a construction circle, inverts for one beat, then tears away in horizontal bands. The
+   title prints in with echo copies collapsing onto it; the rig draws down; each plate's frame
+   opens from the left and its text fades in. */
+.is-intro .veil{background:var(--paper);animation:veil-off 0s 2s forwards}
+@keyframes veil-off{to{background:transparent}}
+.is-intro .head h1{animation:echo .75s cubic-bezier(.16,1,.3,1) .5s both}
+@keyframes echo{
+  from{opacity:0;transform:translateX(48px);text-shadow:-40px 0 0 rgb(29 68 200 / .5),-80px 0 0 rgb(29 68 200 / .3),-120px 0 0 rgb(29 68 200 / .15)}
+  25%{opacity:1}
+  to{opacity:1;transform:none;text-shadow:0 0 0 rgb(29 68 200 / 0),0 0 0 rgb(29 68 200 / 0),0 0 0 rgb(29 68 200 / 0)}}
+.is-intro .head{animation:rule .6s cubic-bezier(.16,1,.3,1) .55s both}
+@keyframes rule{from{border-bottom-color:transparent}to{border-bottom-color:var(--cobalt)}}
+.is-intro .glyphs{animation:fade .8s ease-out .7s both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.is-intro .log::before{animation:draw .7s cubic-bezier(.16,1,.3,1) .6s both}
+@keyframes draw{from{transform:scaleY(0)}to{transform:none}}
+.is-intro .log li{animation:frame .5s cubic-bezier(.16,1,.3,1) calc(.75s + var(--i) * 100ms) both}
+@keyframes frame{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 -80px)}}
+.is-intro .log li>:not(.joint){animation:fade .35s ease-out calc(.95s + var(--i) * 100ms) both}

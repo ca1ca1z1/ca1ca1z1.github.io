@@ -5,42 +5,50 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Experience · Yuning Cai</title>
 <link rel="stylesheet" href="../assets/base.css?v=72b8038c">
-<link rel="stylesheet" href="./experience.css?v=cd451e6c">
+<link rel="stylesheet" href="./experience.css?v=52aa0756">
+<!-- Opening plays only in the full motion tier; set before first paint so content never flashes. -->
+<script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('is-intro')</script>
+<script src="./experience.js?v=ef0ff691" defer></script>
 </head>
 <body>
+<canvas class="field" aria-hidden="true"></canvas>
+<canvas class="veil" aria-hidden="true"></canvas>
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar"><a href="../work/">← Work</a><span class="here">02 / Experience</span><a href="../capability/">Capability →</a></header>
 
 <main id="main">
-  <h1>Experience</h1>
+  <!-- Blueprint plate after an event PV: grey-blue paper, dot grid, cobalt construction lines,
+       numbered specimens, mirrored serif capitals. Motion and the pointer compass: experience.js. -->
+  <div class="glyphs" aria-hidden="true"><b>E</b><b>X</b><b>P</b><b>R</b><b>N</b></div>
+  <header class="head">
+    <h1>Experience</h1>
+  </header>
 
   <!-- Timeline, newest first. One <li> per entry; id = evidence code. -->
   <ol class="log">
-    <li id="E-01">
-      <time>2026.06 — 2026.07</time>
-      <div>
-        <h2>AU Optronics</h2>
-        <p class="role">Business Process Automation Intern · Suzhou, China</p>
-        <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
-      </div>
+    <li id="E-01" tabindex="0" style="--i:0">
+      <span class="joint" aria-hidden="true">1</span>
+      <p class="code">E-01 · <time>2026.06 — 2026.07</time></p>
+      <h2>AU Optronics</h2>
+      <p class="role">Business Process Automation Intern · Suzhou, China</p>
+      <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
     </li>
-    <li id="E-02">
-      <time>2024.09 — 2025.06</time>
-      <div>
-        <h2>Crestwood Preparatory College</h2>
-        <p class="role">Mathematics Peer Tutor · Toronto, ON</p>
-        <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
-      </div>
+    <li id="E-02" tabindex="0" style="--i:1">
+      <span class="joint" aria-hidden="true">2</span>
+      <p class="code">E-02 · <time>2024.09 — 2025.06</time></p>
+      <h2>Crestwood Preparatory College</h2>
+      <p class="role">Mathematics Peer Tutor · Toronto, ON</p>
+      <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
     </li>
-    <li id="E-03">
-      <time>2024.08</time>
-      <div>
-        <h2>Oxford ML Seminar</h2>
-        <p class="role">Student Researcher · Oxford, UK</p>
-        <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
-      </div>
+    <li id="E-03" tabindex="0" style="--i:2">
+      <span class="joint" aria-hidden="true">3</span>
+      <p class="code">E-03 · <time>2024.08</time></p>
+      <h2>Oxford ML Seminar</h2>
+      <p class="role">Student Researcher · Oxford, UK</p>
+      <dl><dt>Scope</dt><dd>—</dd><dt>Outcome</dt><dd>—</dd></dl>
     </li>
   </ol>
 </main>
+<div class="end" aria-hidden="true"></div>
 </body>
 </html>
