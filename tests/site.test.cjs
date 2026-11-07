@@ -54,7 +54,7 @@ function codes(file, prefix) {
   return list.length;
 }
 const work = codes('work/index.html', 'P'), exp = codes('experience/index.html', 'E');
-const skills = [...read('capability/index.html').matchAll(/<tr><(?:th scope="row"[^>]*>[^<]*<\/th><)?td>/g)].length;
+const skills = [...read('capability/index.html').matchAll(/class="mod"/g)].length;   // one module per skill
 const records = [...read('record/index.html').matchAll(/<li[\s>]/g)].length;
 
 // Home index counts match the pages they describe.
