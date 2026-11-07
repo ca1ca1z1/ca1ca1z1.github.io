@@ -76,7 +76,7 @@ main:focus{outline:none}
   .sw{top:24px}
 }
 
-/* Home opening (full motion tier, only when the long entrance does not play; field.js removes
+/* Home opening (full motion tier, every visit; after the long entrance when that plays; field.js removes
    .is-opening after 1.7 s). In step with the lattice spreading from the centre (field.js):
    the HUD fades up; the name and the intro line are each covered by an off-white tile that opens
    from its vertical centreline, then wipes off to the right to leave the type; the orange square

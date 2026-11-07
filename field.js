@@ -10,7 +10,7 @@
    Two tiers. Full: everything above. Reduced (prefers-reduced-motion): only feedback that answers
    the pointer directly and stays small — lens, guides, readout, selection rails — placed instantly,
    without easing; no trail, waves, roll, idle flicker or intro fade.
-   Home opening (≤1.7 s, full tier, only when the long entrance does not play): the lattice spreads
+   Home opening (≤1.7 s, full tier, every visit — after the long entrance when it plays): the lattice spreads
    from the centre cell as a Manhattan diamond with a lit front, and a ring wave opens cells from
    their centreline; home.css plays the type and the index tiles in step (see reveal()).
    Pure canvas, no dependencies. Sleeps when nothing moves. */
@@ -49,7 +49,7 @@
   function approach(value, goal, rate, epsilon = .3) {
     return Math.abs(goal - value) < epsilon ? goal : value + (goal - value) * rate;
   }
-  // Home opening (when the long entrance does not play): the lattice spreads from the centre cell
+  // Home opening (every visit, after the long entrance if it plays): the lattice spreads from the centre cell
   // as a Manhattan diamond. Front (in cells) at t ms, for a viewport whose farthest cell is maxD away.
   const REVEAL_MS = 650, OPENING_MS = 1700;
   function reveal(t, maxD) {
@@ -255,14 +255,16 @@
   function start() {
     if (entering()) return;
     observer.disconnect();
-    // Home opening (set by the page's head script; entrance.js clears it when the long entrance
-    // plays): the lattice spreads from the centre while a ring wave opens cells from their
-    // centreline; home.css plays the type and tiles. Otherwise the lattice fades in after the entrance.
+    // Home opening, on every visit in the full tier: straight away when the long entrance does not
+    // play (the head script has already set .is-opening), or the moment it ends (entrance.js cleared
+    // the class while it played; adding it again here restarts home.css's opening from the top).
+    // The lattice spreads from the centre while a ring wave opens cells from their centreline.
     const root = document.documentElement;
-    opening = root.classList.contains('is-opening') && !reduce.matches;
-    introStart = performance.now(); intro = reduce.matches || opening ? 1 : 0;
+    opening = !reduce.matches;
+    introStart = performance.now(); intro = 1;
     resize();
     if (opening) {
+      root.classList.add('is-opening');
       wave(w / 2, h / 2, 12, .35);
       setTimeout(() => { opening = false; root.classList.remove('is-opening'); wake(); }, OPENING_MS);
     } else root.classList.remove('is-opening');
