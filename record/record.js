@@ -1,6 +1,6 @@
 /* Record page motion, after an event PV's operator-file sequence.
-   - opening (≤1.6 s): a black frame parts from its horizontal centreline in whole-cell steps while an
-     acid line draws outward along it; the altitude ruler then extends down cell by cell
+   - opening (≤1.6 s, continuous eased motion): a black frame parts from its horizontal centreline
+     while an acid line draws outward along it; the altitude ruler then draws downward
    - background: three trajectory arcs; scrolling swings them around an off-screen pivot (ascent)
    - altitude ruler on the left, ticked every 31px cell of page height (one cell = 10 m, 0000 at the
      bottom band, the "ground")
@@ -35,16 +35,18 @@
   }
   // Manhattan ring of radius R cells around (x, y): a diamond, vertices top, right, bottom, left.
   const diamond = (x, y, R) => [[x, y - R * CELL], [x + R * CELL, y], [x, y + R * CELL], [x - R * CELL, y]];
-  // Opening state at t ms in a viewport of height h.
-  //   line: centreline length 0..1 · lineAlpha · panel: each black half's height, whole cells
+  // Smooth ease in-out (quintic), for the opening's continuous motion.
+  const inOut = x => { x = clamp(x); return x < .5 ? 16 * x ** 5 : 1 - (-2 * x + 2) ** 5 / 2; };
+  // Opening state at t ms in a viewport of height h. All values move continuously.
+  //   line: centreline length 0..1 · lineAlpha · panel: each black half's height in px
   //   ruler: ruler reveal 0..1 · done
   function veil(t, h) {
-    const half = Math.ceil(h / 2 / CELL) * CELL;
+    const half = Math.ceil(h / 2);
     return {
-      line: out(t / 320),
-      lineAlpha: 1 - clamp((t - 760) / 260),
-      panel: Math.min(half, Math.ceil(half * (1 - out((t - 280) / 620)) / CELL) * CELL),
-      ruler: clamp((t - 700) / 600),
+      line: out(t / 380),
+      lineAlpha: 1 - inOut((t - 700) / 320),
+      panel: half * (1 - inOut((t - 260) / 680)),
+      ruler: out((t - 680) / 700),
       done: t >= INTRO_MS
     };
   }
@@ -101,13 +103,13 @@
     drawScene(performance.now());
   }
 
-  // Ruler, in page coordinates: drawn once, scrolls with the page. The opening reveals it downward
-  // from the top of the viewport a cell at a time.
+  // Ruler, in page coordinates: drawn once, scrolls with the page. The opening draws it downward
+  // from the top of the viewport.
   function drawRuler(reveal) {
     rtx.clearRect(0, 0, rail, pageH);
     if (reveal <= 0) return;
     const rx = rail - 12, wide = rail >= 64;
-    const limit = reveal >= 1 ? pageH : scrollY + Math.min(h, snap(h * reveal + CELL));
+    const limit = reveal >= 1 ? pageH : scrollY + h * reveal;
     rtx.fillStyle = rgba(INK, .8); rtx.fillRect(rx, 0, 1, limit);
     rtx.font = `700 14px ${SANS}`; rtx.textAlign = 'right'; rtx.textBaseline = 'middle';
     for (let i = 0, y = 0; y <= limit; i++, y += CELL) {
