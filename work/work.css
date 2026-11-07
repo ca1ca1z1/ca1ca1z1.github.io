@@ -11,8 +11,13 @@
 }
 @media(max-width:600px){:root{--edge:16px}}
 
-body{overflow-x:hidden;background:radial-gradient(120% 80% at 50% 0%,#eef0ef 0%,var(--bg) 55%,#d6dad9 100%) fixed,var(--bg)}
-.field,.marks{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+body{overflow-x:hidden;background:var(--bg)}
+/* The haze: its own fixed, composited layer. (A `background-attachment: fixed` gradient repainted
+   the whole screen on every scroll step.) */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;will-change:transform;
+  background:radial-gradient(120% 80% at 50% 0%,#eef0ef 0%,var(--bg) 55%,#d6dad9 100%)}
+.wall,.field,.marks{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+.wall{z-index:0}
 .field{z-index:0}
 .marks{z-index:15}   /* click slashes sit above the cards, so every click answers */
 .bar,main{position:relative;z-index:1}
@@ -25,7 +30,7 @@ main:focus{outline:none}
 /* Anchored to the content column's left edge, so it sits under the title on any screen width; only the window edge crops it. */
 .ghost{position:absolute;left:calc(max(0px,(100% - 1240px) / 2) + var(--edge) - .05em);top:100px;margin:0;pointer-events:none;
   font:800 clamp(140px,30vw,440px)/.8 var(--sans);letter-spacing:-.06em;color:rgb(18 19 19 / .07);filter:blur(5px);
-  transform:translateX(var(--drift,0px));white-space:nowrap}
+  transform:translate3d(var(--drift,0px),0,0);will-change:transform;white-space:nowrap}   /* blurred once, then only moved */
 
 .head{padding:72px 0 8px}
 .head h1{display:inline-block;position:relative;margin:0;font:800 clamp(64px,12vw,176px)/.82 var(--sans);letter-spacing:-.055em}
@@ -51,7 +56,7 @@ main:focus{outline:none}
 .catalogue{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:72px 56px}
 article{position:relative;scroll-margin-top:48px;padding:18px 18px 26px;background:var(--card);
   box-shadow:0 1px 0 rgb(0 0 0 / .06),0 14px 30px -18px rgb(20 26 28 / .45);transform:translateY(var(--py,0px)) rotate(calc(var(--rot) * var(--tilt,1)));
-  transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
+  transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s;will-change:transform}
 .tape{position:absolute;left:50%;top:-11px;width:88px;height:22px;margin-left:-44px;background:rgb(200 205 204 / .75);transform:rotate(-3deg)}
 /* Selection (hover, keyboard focus, or its acrostic row): the card straightens and lifts, red
    tracking brackets close in on it. */
@@ -101,8 +106,8 @@ article dd{margin:0}
 @keyframes op-drop{from{opacity:0;transform:translateY(22px) rotate(calc(var(--rot) * 3))}to{opacity:1;transform:rotate(var(--rot))}}
 
 /* Scroll (full tier; work.js writes the values). Acrostic dissolve: as the index leaves the top,
-   each title blurs and drifts outward in its arrival order, the red letters last. Board sway:
+   each title fades and drifts outward in its arrival order, the red letters last. Board sway:
    cards straighten at the viewport's centre and tilt/drift away from it (see article above). */
-.row .pre{opacity:calc(1 - var(--l,0));filter:blur(calc(var(--l,0) * 6px));transform:translateX(calc(var(--l,0) * -32px))}
-.row .post{opacity:calc(1 - var(--l,0));filter:blur(calc(var(--l,0) * 6px));transform:translateX(calc(var(--l,0) * 32px))}
-.row .key{opacity:calc(1 - var(--lk,0));filter:blur(calc(var(--lk,0) * 4px))}
+.row .pre{opacity:calc(1 - var(--l,0));transform:translateX(calc(var(--l,0) * -32px))}
+.row .post{opacity:calc(1 - var(--l,0));transform:translateX(calc(var(--l,0) * 32px))}
+.row .key{opacity:calc(1 - var(--lk,0))}

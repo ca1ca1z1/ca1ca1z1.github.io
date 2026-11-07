@@ -92,112 +92,116 @@
   if (typeof document === 'undefined') return api;
 
   const html = document.documentElement;
-  const field = document.querySelector('.field'), marksEl = document.querySelector('.marks');
-  const ctx = field && field.getContext('2d'), mtx = marksEl && marksEl.getContext('2d');
+  const field = document.querySelector('.field'), marksEl = document.querySelector('.marks'), wallEl = document.querySelector('.wall');
+  const ctx = field && field.getContext('2d'), mtx = marksEl && marksEl.getContext('2d'), wtx = wallEl && wallEl.getContext('2d');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   if (html.classList.contains('is-intro')) setTimeout(() => html.classList.remove('is-intro'), reduce.matches ? 0 : INTRO_MS);
-  if (!ctx || !mtx) return api;
+  if (!ctx || !mtx || !wtx) return api;
   const rgba = (rgb, a) => `rgba(${rgb},${a})`;
   const cards = [...document.querySelectorAll('.catalogue article')];
   const tapes = cards.map(c => c.querySelector('.tape') || c);
   const ghost = document.querySelector('.ghost');
+  const acro = document.querySelector('.acro'), rows = [...document.querySelectorAll('.acro .row')];
+  const rowOrder = rows.map(r => +getComputedStyle(r).getPropertyValue('--o') || 0);   // read once
+  const SERIF = getComputedStyle(html).getPropertyValue('--serif') || 'Georgia, serif';
 
-  let w = 0, h = 0, raf = 0, marks = [], pin = null, settleUntil = 0;
+  let w = 0, h = 0, dpr = 1, marks = [], pin = null, settleUntil = 0;
   const pointer = {x: 0, y: 0, on: false};
-  const ret = {x: 0, y: 0, placed: false};
+
+  // One scheduler: every input only marks what changed; a single frame does the work.
+  //   field — reticle and thread (pointer moved, page scrolled, a card moving)
+  //   wall  — side-margin wall (page scrolled, resized)
+  //   sway  — scroll-driven CSS values (page scrolled)
+  //   marks — click slashes and the thread's pin (while any are showing)
+  const dirty = {field: false, wall: false, sway: false};
+  let raf = 0;
+  const request = (...what) => { for (const k of what) dirty[k] = true; if (!raf && !document.hidden) raf = requestAnimationFrame(frame); };
 
   function fit(c, x) {
-    const dpr = Math.min(devicePixelRatio || 1, 2);
     c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
     c.style.width = w + 'px'; c.style.height = h + 'px';
     x.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
-  let wall = [];
-  function resize() {
-    w = innerWidth; h = innerHeight; fit(field, ctx); fit(marksEl, mtx);
-    wall = wallItems(h, Math.max(0, document.documentElement.scrollHeight - h), document.querySelector('.acro')?.dataset.word || 'MADE');
-    draw(performance.now());
-  }
 
-  // The wall, in the side margins only (nothing where the margin is under 120px). Full tier: depth
-  // parallax, items fading in as they enter, rings and slashes drawing out, scraps turning a little.
-  // Reduced tier: the same items fixed to the page, whole and still.
-  const SERIF = getComputedStyle(document.documentElement).getPropertyValue('--serif') || 'Georgia, serif';
+  // --- wall: redrawn only when the page scrolls or resizes ----------------------------------------
+  // Simple vector items are drawn directly (cheap); only the blurred letters are pre-rendered once,
+  // because blurring live is the one costly thing here.
+  let wall = [], gutter = 0;
+  function glyphSprite(letter, s) {
+    const size = 300 * s, pad = 16, c = document.createElement('canvas');
+    c.width = c.height = Math.ceil((size + pad * 2) * dpr);
+    const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.translate(size / 2 + pad, size / 2 + pad);
+    g.font = `400 ${Math.round(260 * s)}px ${SERIF}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.filter = 'blur(3px)'; g.fillStyle = 'rgba(18,19,19,.06)'; g.fillText(letter, 0, 0);
+    return {c, half: size / 2 + pad};
+  }
+  function layoutWall() {
+    gutter = (w - Math.min(MAIN_MAX, w)) / 2;
+    wall = gutter < 120 ? [] : wallItems(h, Math.max(0, html.scrollHeight - h), acro?.dataset.word || 'MADE');
+    const k = Math.min(1, gutter / 340);
+    for (const it of wall) { it.s = it.size * k; if (it.kind === 'glyph') it.sprite = glyphSprite(it.letter, it.s); }
+  }
+  // Full tier: depth parallax, fade in on entering, a slight turn. Reduced: fixed to the page, still.
   function drawWall() {
-    const gutter = (w - Math.min(MAIN_MAX, w)) / 2;
-    if (gutter < 120) return;
-    const still = reduce.matches, sy = scrollY, k = Math.min(1, gutter / 340);
+    wtx.clearRect(0, 0, w, h);
+    const still = reduce.matches, sy = scrollY;
     for (const it of wall) {
       const y = it.y - sy * (still ? 1 : it.depth);
-      if (y < -260 || y > h + 260) continue;
+      if (y < -200 || y > h + 200) continue;
       const e = still ? 1 : entering(y, h);
       if (e <= 0) continue;
-      const x = it.side < 0 ? gutter * it.u : w - gutter * it.u, s = it.size * k;
-      const rot = it.rot + (still ? 0 : (sy * .0006) * (it.depth - .6));
-      ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.globalAlpha = e;
-      if (it.kind === 'scrap') {
+      const x = it.side < 0 ? gutter * it.u : w - gutter * it.u, s = it.s, g = wtx;
+      g.save(); g.globalAlpha = e; g.translate(x, y); g.rotate(it.rot + (still ? 0 : sy * .0006 * (it.depth - .6)));
+      if (it.kind === 'glyph') g.drawImage(it.sprite.c, -it.sprite.half, -it.sprite.half, it.sprite.half * 2, it.sprite.half * 2);
+      else if (it.kind === 'scrap') {
         const W = 150 * s, H = 110 * s;
-        ctx.fillStyle = 'rgba(20,26,28,.05)'; ctx.fillRect(-W / 2 + 3, -H / 2 + 5, W, H);
-        ctx.fillStyle = '#eef0ef'; ctx.fillRect(-W / 2, -H / 2, W, H);
-        ctx.save(); ctx.beginPath(); ctx.rect(-W / 2 + 8, -H / 2 + 8, W - 16, H - 30); ctx.clip();
-        ctx.strokeStyle = 'rgba(18,19,19,.12)'; ctx.lineWidth = 1; ctx.beginPath();
-        for (let t = -H; t < W + H; t += 9) { ctx.moveTo(-W / 2 + t, -H / 2); ctx.lineTo(-W / 2 + t - H, H / 2); }
-        ctx.stroke(); ctx.restore();
-        ctx.fillStyle = 'rgba(200,205,204,.8)'; ctx.save(); ctx.rotate(-.05); ctx.fillRect(-22 * s, -H / 2 - 8 * s, 44 * s, 14 * s); ctx.restore();
+        g.fillStyle = 'rgba(20,26,28,.05)'; g.fillRect(-W / 2 + 3, -H / 2 + 5, W, H);
+        g.fillStyle = '#eef0ef'; g.fillRect(-W / 2, -H / 2, W, H);
+        g.strokeStyle = 'rgba(18,19,19,.12)'; g.lineWidth = 1; g.beginPath();
+        for (let t = 9; t < W - 16; t += 9) { g.moveTo(-W / 2 + 8 + t, -H / 2 + 8); g.lineTo(-W / 2 + 8 + Math.max(0, t - (H - 30)), -H / 2 + 8 + Math.min(H - 30, t)); }
+        g.stroke();
+        g.fillStyle = 'rgba(200,205,204,.8)'; g.rotate(-.05); g.fillRect(-22 * s, -H / 2 - 8 * s, 44 * s, 14 * s);
       } else if (it.kind === 'target') {
         const R = 34 * s;
-        ctx.strokeStyle = 'rgba(18,19,19,.22)'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(0, 0, R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * e); ctx.stroke();
-        ctx.beginPath(); ctx.arc(0, 0, R * .45, 0, Math.PI * 2); ctx.stroke();
-        ctx.beginPath();
-        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { ctx.moveTo(dx * (R + 4), dy * (R + 4)); ctx.lineTo(dx * (R + 12), dy * (R + 12)); }
-        ctx.stroke();
-        ctx.fillStyle = rgba(RED, .85); ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
+        g.strokeStyle = 'rgba(18,19,19,.22)'; g.lineWidth = 1; g.beginPath();
+        g.arc(0, 0, R, 0, Math.PI * 2); g.moveTo(R * .45, 0); g.arc(0, 0, R * .45, 0, Math.PI * 2);
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { g.moveTo(dx * (R + 4), dy * (R + 4)); g.lineTo(dx * (R + 12), dy * (R + 12)); }
+        g.stroke();
+        g.fillStyle = rgba(RED, .85); g.beginPath(); g.arc(0, 0, 3.5, 0, Math.PI * 2); g.fill();
       } else if (it.kind === 'hex') {
         const R = 13 * s;
-        ctx.strokeStyle = 'rgba(18,19,19,.18)'; ctx.lineWidth = 1;
-        const cells = [[0, 0], [1, 0], [-1, 0], [.5, .866], [-.5, .866], [.5, -.866], [1.5, .866]];
-        cells.forEach(([cx, cy], j) => {
-          if (j / cells.length > e) return;
-          ctx.beginPath();
-          for (let q = 0; q < 6; q++) { const a = Math.PI / 6 + q * Math.PI / 3; ctx.lineTo(cx * R * 1.8 + Math.cos(a) * R, cy * R * 1.8 + Math.sin(a) * R); }
-          ctx.closePath();
-          if (j === 3) { ctx.fillStyle = rgba(RED, .55); ctx.fill(); } else ctx.stroke();
+        g.strokeStyle = 'rgba(18,19,19,.18)'; g.lineWidth = 1;
+        [[0, 0], [1, 0], [-1, 0], [.5, .866], [-.5, .866], [.5, -.866], [1.5, .866]].forEach(([cx, cy], j) => {
+          g.beginPath();
+          for (let q = 0; q < 6; q++) { const a = Math.PI / 6 + q * Math.PI / 3; g.lineTo(cx * R * 1.8 + Math.cos(a) * R, cy * R * 1.8 + Math.sin(a) * R); }
+          g.closePath();
+          if (j === 3) { g.fillStyle = rgba(RED, .55); g.fill(); } else g.stroke();
         });
-      } else if (it.kind === 'slash') {
-        const L = 130 * s * e;
-        ctx.fillStyle = rgba(RED, .5); ctx.fillRect(-65 * s, -2, L, 4);
-      } else {   // glyph: a letter of the acrostic's word, huge, faint and soft
-        ctx.font = `400 ${Math.round(260 * s)}px ${SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.filter = 'blur(3px)'; ctx.fillStyle = 'rgba(18,19,19,.06)'; ctx.fillText(it.letter, 0, 0); ctx.filter = 'none';
-      }
-      ctx.restore();
+      } else { g.fillStyle = rgba(RED, .5); g.fillRect(-65 * s, -2, 130 * s, 4); }   // slash
+      g.restore();
     }
   }
 
-  // Reticle and thread (under the cards). The thread ends at the centre of the nearest card's tape,
-  // read live from the tape itself, so it rides along as the card straightens and lifts.
+  // --- reticle and thread: follows the pointer exactly ----------------------------------------
   function drawField() {
     ctx.clearRect(0, 0, w, h); pin = null;
-    drawWall();
-    if (!pointer.on || !ret.placed) return;
-    const x = ret.x, y = ret.y;
+    if (!pointer.on) return;
+    const x = pointer.x, y = pointer.y;
     const pins = tapes.map(t => { const b = t.getBoundingClientRect(); return {x: b.left + b.width / 2, y: b.top + b.height / 2}; });
     const i = nearest(x, y, pins);
     if (i >= 0) {
       const p = pins[i], f = 1 - Math.hypot(p.x - x, p.y - y) / REACH;
       ctx.strokeStyle = rgba(RED, .2 + .45 * f); ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(p.x, p.y); ctx.stroke();
-      pin = p;   // its dot is drawn on the top layer, on the tape
+      pin = p;
     }
     ctx.strokeStyle = rgba(INK, .4); ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath();
+    ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2);
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { ctx.moveTo(x + dx * 18, y + dy * 18); ctx.lineTo(x + dx * 24, y + dy * 24); }
     ctx.stroke();
     ctx.fillStyle = rgba(RED, 1); ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
   }
-  // Slash marks (above the cards).
+  // --- click slashes and the thread's pin (top layer) --------------------------------------------
   function drawMarks(now) {
     mtx.clearRect(0, 0, w, h);
     marks = marks.filter(m => slashAt(now - m.t0, m.still));
@@ -210,73 +214,74 @@
         mtx.beginPath(); mtx.moveTo(x - cx, y - cy); mtx.lineTo(x - cx + 2 * cx * k, y - cy + 2 * cy * k); mtx.stroke();
       }
     }
-    if (pin) {   // the thread's pin, on the tape
-      mtx.fillStyle = rgba(RED, 1); mtx.beginPath(); mtx.arc(pin.x, pin.y, 3.5, 0, Math.PI * 2); mtx.fill();
-    }
+    if (pin) { mtx.fillStyle = rgba(RED, 1); mtx.beginPath(); mtx.arc(pin.x, pin.y, 3.5, 0, Math.PI * 2); mtx.fill(); }
   }
-  function draw(now) { drawField(); drawMarks(now); }
 
-  function frame(now) {
-    raf = 0;
-    const k = reduce.matches ? 1 : .35;
-    if (ret.placed) { ret.x = approach(ret.x, pointer.x, k); ret.y = approach(ret.y, pointer.y, k); }
-    draw(now);
-    if (marks.length || ret.x !== pointer.x || ret.y !== pointer.y || now < settleUntil) raf = requestAnimationFrame(frame);
-  }
-  const wake = () => { if (!raf && !document.hidden) raf = requestAnimationFrame(frame); };
-
-  addEventListener('pointermove', e => {
-    pointer.x = e.clientX; pointer.y = e.clientY; pointer.on = e.pointerType !== 'touch' || e.pressure > 0;
-    if (!ret.placed) { ret.x = pointer.x; ret.y = pointer.y; ret.placed = true; }
-    wake();
-  }, {passive: true});
-  addEventListener('pointerdown', e => {
-    pointer.x = e.clientX; pointer.y = e.clientY; pointer.on = true;
-    if (!ret.placed) { ret.x = pointer.x; ret.y = pointer.y; ret.placed = true; }
-    if (marks.length > 8) marks.shift();
-    const a1 = -.95 + (Math.random() - .5) * .35;
-    marks.push({x: e.clientX, y: e.clientY + scrollY, t0: performance.now(), a1, a2: a1 + 1.7 + (Math.random() - .5) * .3, still: reduce.matches});
-    draw(performance.now()); wake();
-  }, {passive: true});
-  addEventListener('pointerup', e => { if (e.pointerType === 'touch') { pointer.on = false; wake(); } }, {passive: true});
-  html.addEventListener('pointerleave', () => { pointer.on = false; draw(performance.now()); });
-  // Scroll effects (full tier): ghost drift, acrostic dissolve, board sway. Written as CSS custom
-  // properties, at most once per frame.
-  const acro = document.querySelector('.acro'), rows = [...document.querySelectorAll('.acro .row')];
-  let scrollQueued = false;
-  function applyScroll() {
-    scrollQueued = false;
+  // --- scroll-driven CSS values: all reads first, then all writes (no forced re-layouts) ---------
+  const last = new Map();
+  const set = (el, k, v) => { const key = el; const m = last.get(key) || {}; if (m[k] !== v) { el.style.setProperty(k, v); m[k] = v; last.set(key, m); } };
+  function applySway() {
     if (reduce.matches) return;
-    if (ghost) ghost.style.setProperty('--drift', Math.round(-scrollY * .12) + 'px');
-    if (acro) {
-      const b = acro.getBoundingClientRect(), p = acroProgress(b.top, b.height);
-      acro.style.setProperty('--lk', leaveKey(p).toFixed(3));
-      for (const r of rows) r.style.setProperty('--l', leaveRow(p, +getComputedStyle(r).getPropertyValue('--o') || 0).toFixed(3));
+    const ab = acro?.getBoundingClientRect(), cb = cards.map(c => c.getBoundingClientRect());   // reads
+    if (ghost) set(ghost, '--drift', Math.round(-scrollY * .12) + 'px');                       // writes
+    if (ab) {
+      const p = acroProgress(ab.top, ab.height);
+      set(acro, '--lk', leaveKey(p).toFixed(2));
+      rows.forEach((r, i) => set(r, '--l', leaveRow(p, rowOrder[i]).toFixed(2)));
     }
-    for (const c of cards) {
-      const b = c.getBoundingClientRect(), s = sway((b.top + b.height / 2 - h / 2) / h);
-      c.style.setProperty('--tilt', s.tilt.toFixed(3)); c.style.setProperty('--py', s.drift + 'px');
-    }
+    cards.forEach((c, i) => {
+      const s = sway((cb[i].top + cb[i].height / 2 - h / 2) / h);
+      set(c, '--tilt', s.tilt.toFixed(2)); set(c, '--py', s.drift + 'px');
+    });
   }
-  function clearScroll() {
-    ghost?.style.removeProperty('--drift'); acro?.style.removeProperty('--lk');
+  function clearSway() {
+    last.clear(); ghost?.style.removeProperty('--drift'); acro?.style.removeProperty('--lk');
     for (const r of rows) r.style.removeProperty('--l');
     for (const c of cards) { c.style.removeProperty('--tilt'); c.style.removeProperty('--py'); }
   }
-  addEventListener('scroll', () => {
-    if (!scrollQueued && !reduce.matches) { scrollQueued = true; requestAnimationFrame(applyScroll); }
-    draw(performance.now());
-  }, {passive: true});
 
-  // Row ↔ card: selecting either lights both (hover and keyboard focus alike).
+  function frame(now) {
+    raf = 0;
+    if (dirty.sway) { dirty.sway = false; applySway(); }
+    if (dirty.wall) { dirty.wall = false; drawWall(); }
+    if (dirty.field || now < settleUntil) { dirty.field = false; drawField(); }
+    drawMarks(now);
+    if (marks.length || now < settleUntil) raf = requestAnimationFrame(frame);
+  }
+
+  function resize() {
+    w = innerWidth; h = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2);
+    fit(field, ctx); fit(marksEl, mtx); fit(wallEl, wtx);
+    layoutWall();
+    request('sway', 'wall', 'field');
+  }
+
+  addEventListener('pointermove', e => {
+    pointer.x = e.clientX; pointer.y = e.clientY; pointer.on = e.pointerType !== 'touch' || e.pressure > 0;
+    request('field');
+  }, {passive: true});
+  addEventListener('pointerdown', e => {
+    pointer.x = e.clientX; pointer.y = e.clientY; pointer.on = true;
+    if (marks.length > 8) marks.shift();
+    const a1 = -.95 + (Math.random() - .5) * .35;
+    marks.push({x: e.clientX, y: e.clientY + scrollY, t0: performance.now(), a1, a2: a1 + 1.7 + (Math.random() - .5) * .3, still: reduce.matches});
+    request('field');
+  }, {passive: true});
+  addEventListener('pointerup', e => { if (e.pointerType === 'touch') { pointer.on = false; request('field'); } }, {passive: true});
+  html.addEventListener('pointerleave', () => { pointer.on = false; request('field'); });
+  addEventListener('scroll', () => request('sway', 'wall', 'field'), {passive: true});
+
+  // Row ↔ card: selecting either lights both (hover and keyboard focus alike). While a card
+  // straightens or settles (0.3 s), keep redrawing so the thread's pin rides along with its tape.
+  const settle = () => { settleUntil = performance.now() + 350; request('field'); };
   document.querySelectorAll('.acro .row').forEach(row => {
     const card = document.querySelector(row.getAttribute('href'));
     if (!card) return;
     const on = () => {
-      row.classList.add('is-linked'); card.classList.add('is-linked');
+      row.classList.add('is-linked'); card.classList.add('is-linked'); settle();
       for (const c of cards) if (c !== card) c.classList.remove('is-target');   // selecting another clears a jump's frame
     };
-    const off = () => { row.classList.remove('is-linked'); card.classList.remove('is-linked'); };
+    const off = () => { row.classList.remove('is-linked'); card.classList.remove('is-linked'); settle(); };
     row.addEventListener('click', () => { for (const c of cards) c.classList.toggle('is-target', c === card); });
     for (const el of [row, card]) {
       el.addEventListener('pointerenter', on); el.addEventListener('pointerleave', off);
@@ -291,17 +296,15 @@
   }
   addEventListener('hashchange', markTarget);
   markTarget();
-  // Keep the thread's pin on its tape while a card straightens, lifts or settles.
-  for (const c of cards) c.addEventListener('transitionrun', () => { settleUntil = performance.now() + 400; wake(); });
 
-  addEventListener('resize', () => { resize(); applyScroll(); });
+  addEventListener('resize', resize);
   addEventListener('load', resize);   // page height is final now: lay the wall out again
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) request('field'); });
   reduce.addEventListener?.('change', () => {
     marks = []; html.classList.remove('is-intro');
-    if (reduce.matches) clearScroll(); else applyScroll();
-    draw(performance.now());
+    if (reduce.matches) clearSway();
+    request('sway', 'wall', 'field');
   });
-  resize(); applyScroll();
+  resize();
   return api;
 });
