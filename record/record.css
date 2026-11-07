@@ -47,11 +47,8 @@ main:focus{outline:none}
 .head h1{margin:0;overflow:hidden;font:700 clamp(64px,14vw,160px)/.86 var(--sans);letter-spacing:-.05em;padding:0 .04em .04em 0}
 .head h1 span{display:block}
 .credit{max-width:360px}
-.credit blockquote{margin:0 0 16px;padding-left:14px;border-left:3px solid var(--acid);font:italic 400 19px/1.45 var(--sans);letter-spacing:-.005em}
+.credit blockquote{margin:0;padding-left:14px;border-left:3px solid var(--acid);font:italic 400 19px/1.45 var(--sans);letter-spacing:-.005em}
 .credit blockquote p{margin:0}
-.credit dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;margin:0}
-.credit dt{font:400 14px/1.7 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
-.credit dd{margin:0;font-weight:700;line-height:1.4}
 @media(max-width:860px){.head{grid-template-columns:minmax(0,1fr)}}
 
 /* Section: two redaction bars over a black slab heading. */
