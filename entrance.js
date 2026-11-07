@@ -48,6 +48,7 @@
   }
   function begin() {
     if(running)return;
+    document.documentElement?.classList.remove('is-opening'); // home opening waits until the entrance ends (field.js)
     clearTimeout(exitTimer);
     lastFocus=document.activeElement;resize();overlay.hidden=false;overlay.classList.remove('is-leaving');
     shell.inert=true;document.body.classList.add('is-entering');running=true;elapsed=0;

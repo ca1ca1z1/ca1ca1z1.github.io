@@ -10,6 +10,9 @@
    Two tiers. Full: everything above. Reduced (prefers-reduced-motion): only feedback that answers
    the pointer directly and stays small — lens, guides, readout, selection rails — placed instantly,
    without easing; no trail, waves, roll, idle flicker or intro fade.
+   Home opening (≤1.7 s, full tier, every visit — after the long entrance when it plays): the lattice spreads
+   from the centre cell as a Manhattan diamond with a lit front, and a ring wave opens cells from
+   their centreline; home.css plays the type and the index tiles in step (see reveal()).
    Pure canvas, no dependencies. Sleeps when nothing moves. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -46,7 +49,14 @@
   function approach(value, goal, rate, epsilon = .3) {
     return Math.abs(goal - value) < epsilon ? goal : value + (goal - value) * rate;
   }
-  const api = {CELL, LENS, ring, cellAt, lensAt, approach};
+  // Home opening (every visit, after the long entrance if it plays): the lattice spreads from the centre cell
+  // as a Manhattan diamond. Front (in cells) at t ms, for a viewport whose farthest cell is maxD away.
+  const REVEAL_MS = 650, OPENING_MS = 1700;
+  function reveal(t, maxD) {
+    if (t >= REVEAL_MS) return Infinity;
+    return Math.floor(maxD * out(t / REVEAL_MS));
+  }
+  const api = {CELL, LENS, REVEAL_MS, OPENING_MS, ring, cellAt, lensAt, approach, reveal};
   if (typeof document === 'undefined') return api;
 
   const canvas = document.querySelector('.field');
@@ -55,7 +65,7 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 
   let w = 0, h = 0, ox = 0, oy = 0, target = 0, wheelAcc = 0;
-  let pulses = [], raf = 0, lastInput = 0, intro = 0, introStart = 0, idleTimer = 0;
+  let pulses = [], raf = 0, lastInput = 0, intro = 0, introStart = 0, idleTimer = 0, opening = false;
   const pointer = {x: -1, y: -1, c: null, r: null, inside: false};
   // Lens: eased centre (x, y) chasing the centre of the pointer's cell (tx, ty); a = visibility.
   const lens = {x: 0, y: 0, tx: 0, ty: 0, a: 0, ta: 0, placed: false};
@@ -90,8 +100,14 @@
     // Lattice: a dot at every intersection, a cross every fifth cell (the entrance's 5×5 block).
     // Inside the lens, points grow into crosses and brighten with proximity.
     const y0 = ((oy % CELL) + CELL) % CELL, r0 = Math.round((oy - y0) / CELL);
+    // Opening: only dots within the Manhattan front of the centre cell; the front row itself is lit.
+    const cc = Math.round((w / 2 - ox) / CELL) - 1, rc = Math.round((h / 2 - y0) / CELL) - 1;
+    const front = opening ? reveal(now - introStart, Math.ceil(w / 2 / CELL) + Math.ceil(h / 2 / CELL) + 2) : Infinity;
     for (let x = ox - CELL, c = -1; x < w + CELL; x += CELL, c++) {
       for (let y = y0 - CELL, r = -1; y < h + CELL; y += CELL, r++) {
+        const d = Math.abs(c - cc) + Math.abs(r - rc);
+        if (d > front) continue;
+        if (d === front) { ctx.fillStyle = rgba(WHITE, .7); ctx.fillRect(x - 2, y, 5, 1); ctx.fillRect(x, y - 2, 1, 5); continue; }
         const major = ((c % 5) + 5) % 5 === 0 && (((r - r0) % 5) + 5) % 5 === 0;
         const k = la > 0 ? lensAt(Math.hypot(x - lens.x, y - lens.y)) * la : 0;
         const arm = (major ? 3 : 0) + Math.round(k * 5);
@@ -149,7 +165,8 @@
     draw(now);
     const moving = oy !== target || lens.x !== lens.tx || lens.y !== lens.ty || lens.a !== lens.ta ||
       rails.l !== rails.tl || rails.r !== rails.tr || rails.a !== rails.ta;
-    if (pulses.length || moving || intro < 1) raf = requestAnimationFrame(frame);
+    const revealing = opening && now - introStart < REVEAL_MS;
+    if (pulses.length || moving || intro < 1 || revealing) raf = requestAnimationFrame(frame);
   }
   const wake = () => { if (!raf) raf = requestAnimationFrame(frame); };
 
@@ -238,15 +255,29 @@
   function start() {
     if (entering()) return;
     observer.disconnect();
-    introStart = performance.now(); intro = reduce.matches ? 1 : 0;
-    resize(); wake(); idle();
+    // Home opening, on every visit in the full tier: straight away when the long entrance does not
+    // play (the head script has already set .is-opening), or the moment it ends (entrance.js cleared
+    // the class while it played; adding it again here restarts home.css's opening from the top).
+    // The lattice spreads from the centre while a ring wave opens cells from their centreline.
+    const root = document.documentElement;
+    opening = !reduce.matches;
+    introStart = performance.now(); intro = 1;
+    resize();
+    if (opening) {
+      root.classList.add('is-opening');
+      wave(w / 2, h / 2, 12, .35);
+      setTimeout(() => { opening = false; root.classList.remove('is-opening'); wake(); }, OPENING_MS);
+    } else root.classList.remove('is-opening');
+    wake(); idle();
   }
   const observer = new MutationObserver(start);
   observer.observe(document.body, {attributes: true, attributeFilter: ['class']});
   addEventListener('resize', resize);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });
   // Switching tiers mid-visit: drop pulses, settle the roll, keep lens and rails where they are.
-  reduce.addEventListener?.('change', () => { pulses = []; oy = target; intro = 1; wake(); });
+  reduce.addEventListener?.('change', () => {
+    pulses = []; oy = target; intro = 1; opening = false; document.documentElement.classList.remove('is-opening'); wake();
+  });
   // entrance.js runs first (both deferred); if it is playing, wait for it to finish.
   start();
   return api;

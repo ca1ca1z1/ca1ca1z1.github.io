@@ -75,3 +75,28 @@ main:focus{outline:none}
   .index strong{align-self:start}
   .sw{top:24px}
 }
+
+/* Home opening (full motion tier, every visit; after the long entrance when that plays; field.js removes
+   .is-opening after 1.7 s). In step with the lattice spreading from the centre (field.js):
+   the HUD fades up; the name and the intro line are each covered by an off-white tile that opens
+   from its vertical centreline, then wipes off to the right to leave the type; the orange square
+   flashes on the beat; each index tile runs its five selection strips once, right to left, in
+   turn, and its content appears as they fall. Everything settles by ~1.6 s. */
+.intro h1,.intro p{position:relative;width:fit-content;max-width:100%}
+.is-opening .hud{animation:op-fade .5s ease-out .2s both}
+.is-opening .intro h1::after,.is-opening .intro p::after{content:'';position:absolute;inset:-2px -6px;background:var(--fg);
+  animation:op-tile .6s cubic-bezier(.45,0,.2,1) .28s both}
+.is-opening .intro p::after{animation-delay:.42s}
+.is-opening .intro h1{animation:op-ink 0s .55s both}
+.is-opening .intro p{animation:op-ink 0s .69s both}
+.is-opening .intro p::before{animation:op-flash .3s steps(1,end) .9s both}
+.is-opening .index{animation:op-fade .4s ease-out .55s both}
+.index a:nth-child(1){--t:0}.index a:nth-child(2){--t:1}.index a:nth-child(3){--t:2}.index a:nth-child(4){--t:3}
+.is-opening .index a .fx b{animation:op-strip .5s cubic-bezier(.45,0,.2,1) calc(.62s + var(--t) * 90ms + var(--i) * 35ms) both}
+.is-opening .index a>:not(.fx){animation:op-fade .25s ease-out calc(.86s + var(--t) * 90ms) both}
+@keyframes op-fade{from{opacity:0}to{opacity:1}}
+@keyframes op-ink{from{color:transparent}to{}}
+@keyframes op-tile{0%{clip-path:inset(0 50% 0 50%)}45%{clip-path:inset(0)}100%{clip-path:inset(0 0 0 100%)}}
+@keyframes op-flash{0%{opacity:0}33%{opacity:1}66%{opacity:0}100%{opacity:1}}
+@keyframes op-strip{0%{transform:scaleY(0);transform-origin:bottom}50%{transform:scaleY(1);transform-origin:bottom}
+  50.1%{transform:scaleY(1);transform-origin:top}100%{transform:scaleY(0);transform-origin:top}}
