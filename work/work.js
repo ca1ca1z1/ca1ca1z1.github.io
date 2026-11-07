@@ -63,9 +63,10 @@
   if (!ctx || !mtx) return api;
   const rgba = (rgb, a) => `rgba(${rgb},${a})`;
   const cards = [...document.querySelectorAll('.catalogue article')];
+  const tapes = cards.map(c => c.querySelector('.tape') || c);
   const ghost = document.querySelector('.ghost');
 
-  let w = 0, h = 0, raf = 0, marks = [];
+  let w = 0, h = 0, raf = 0, marks = [], pin = null, settleUntil = 0;
   const pointer = {x: 0, y: 0, on: false};
   const ret = {x: 0, y: 0, placed: false};
 
@@ -77,18 +78,19 @@
   }
   function resize() { w = innerWidth; h = innerHeight; fit(field, ctx); fit(marksEl, mtx); draw(performance.now()); }
 
-  // Reticle and thread (under the cards).
+  // Reticle and thread (under the cards). The thread ends at the centre of the nearest card's tape,
+  // read live from the tape itself, so it rides along as the card straightens and lifts.
   function drawField() {
-    ctx.clearRect(0, 0, w, h);
+    ctx.clearRect(0, 0, w, h); pin = null;
     if (!pointer.on || !ret.placed) return;
     const x = ret.x, y = ret.y;
-    const pins = cards.map(c => { const b = c.getBoundingClientRect(); return {x: b.left + b.width / 2, y: b.top}; });
+    const pins = tapes.map(t => { const b = t.getBoundingClientRect(); return {x: b.left + b.width / 2, y: b.top + b.height / 2}; });
     const i = nearest(x, y, pins);
     if (i >= 0) {
       const p = pins[i], f = 1 - Math.hypot(p.x - x, p.y - y) / REACH;
       ctx.strokeStyle = rgba(RED, .2 + .45 * f); ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(p.x, p.y); ctx.stroke();
-      ctx.fillStyle = rgba(RED, .8); ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill();
+      pin = p;   // its dot is drawn on the top layer, on the tape
     }
     ctx.strokeStyle = rgba(INK, .4); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.stroke();
@@ -110,6 +112,9 @@
         mtx.beginPath(); mtx.moveTo(x - cx, y - cy); mtx.lineTo(x - cx + 2 * cx * k, y - cy + 2 * cy * k); mtx.stroke();
       }
     }
+    if (pin) {   // the thread's pin, on the tape
+      mtx.fillStyle = rgba(RED, 1); mtx.beginPath(); mtx.arc(pin.x, pin.y, 3.5, 0, Math.PI * 2); mtx.fill();
+    }
   }
   function draw(now) { drawField(); drawMarks(now); }
 
@@ -118,7 +123,7 @@
     const k = reduce.matches ? 1 : .35;
     if (ret.placed) { ret.x = approach(ret.x, pointer.x, k); ret.y = approach(ret.y, pointer.y, k); }
     draw(now);
-    if (marks.length || ret.x !== pointer.x || ret.y !== pointer.y) raf = requestAnimationFrame(frame);
+    if (marks.length || ret.x !== pointer.x || ret.y !== pointer.y || now < settleUntil) raf = requestAnimationFrame(frame);
   }
   const wake = () => { if (!raf && !document.hidden) raf = requestAnimationFrame(frame); };
 
@@ -146,13 +151,27 @@
   document.querySelectorAll('.acro .row').forEach(row => {
     const card = document.querySelector(row.getAttribute('href'));
     if (!card) return;
-    const on = () => { row.classList.add('is-linked'); card.classList.add('is-linked'); };
+    const on = () => {
+      row.classList.add('is-linked'); card.classList.add('is-linked');
+      for (const c of cards) if (c !== card) c.classList.remove('is-target');   // selecting another clears a jump's frame
+    };
     const off = () => { row.classList.remove('is-linked'); card.classList.remove('is-linked'); };
+    row.addEventListener('click', () => { for (const c of cards) c.classList.toggle('is-target', c === card); });
     for (const el of [row, card]) {
       el.addEventListener('pointerenter', on); el.addEventListener('pointerleave', off);
       el.addEventListener('focusin', on); el.addEventListener('focusout', off);
     }
   });
+  // A card reached by link (an acrostic row, or Capability's evidence) wears a red frame until
+  // another card is selected — unlike :target, which would keep it until the next jump.
+  function markTarget() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    for (const c of cards) c.classList.toggle('is-target', c.id === id);
+  }
+  addEventListener('hashchange', markTarget);
+  markTarget();
+  // Keep the thread's pin on its tape while a card straightens, lifts or settles.
+  for (const c of cards) c.addEventListener('transitionrun', () => { settleUntil = performance.now() + 400; wake(); });
 
   addEventListener('resize', resize);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });

@@ -50,7 +50,7 @@ main:focus{outline:none}
 article{position:relative;scroll-margin-top:48px;padding:18px 18px 26px;background:var(--card);
   box-shadow:0 1px 0 rgb(0 0 0 / .06),0 14px 30px -18px rgb(20 26 28 / .45);transform:rotate(var(--rot));
   transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
-article::before{content:'';position:absolute;left:50%;top:-11px;width:88px;height:22px;margin-left:-44px;background:rgb(200 205 204 / .75);transform:rotate(-3deg)}
+.tape{position:absolute;left:50%;top:-11px;width:88px;height:22px;margin-left:-44px;background:rgb(200 205 204 / .75);transform:rotate(-3deg)}
 /* Selection (hover, keyboard focus, or its acrostic row): the card straightens and lifts, red
    tracking brackets close in on it. */
 article::after{content:'';position:absolute;inset:-14px;pointer-events:none;opacity:0;
@@ -62,7 +62,8 @@ article:is(:hover,:focus-visible,:focus-within,.is-linked){transform:rotate(0deg
 article:is(:hover,:focus-visible,:focus-within,.is-linked)::after{inset:-6px;opacity:1}
 article:focus{outline:none}
 article:focus-visible{outline:2px solid var(--orange);outline-offset:10px}
-article:target{outline:2px solid var(--red);outline-offset:10px}
+/* Arrived at by link (an acrostic row, or Capability evidence): red frame until another card is selected (work.js). */
+article.is-target{outline:2px solid var(--red);outline-offset:10px}
 
 .plate{aspect-ratio:16/10;background:repeating-linear-gradient(135deg,transparent 0 11px,var(--rule) 11px 12px),var(--plate)}
 .meta{display:flex;gap:18px;margin:16px 0 6px;font:400 14px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -89,7 +90,7 @@ article dd{margin:0}
 @keyframes op-in-l{from{opacity:0;filter:blur(6px);transform:translateX(-18px)}to{opacity:1;filter:none;transform:none}}
 @keyframes op-in-r{from{opacity:0;filter:blur(6px);transform:translateX(18px)}to{opacity:1;filter:none;transform:none}}
 .is-intro .head h1{animation:op-print .5s cubic-bezier(.2,.8,.2,1) .25s both}
-@keyframes op-print{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 -10% 0 0)}}
+@keyframes op-print{from{clip-path:inset(-10% 100% -40% 0)}to{clip-path:inset(-10% -10% -40% -10%)}}   /* room below for the red bar */
 .is-intro .head h1::after{animation:op-slash .35s cubic-bezier(.2,.8,.2,1) .95s both}
 @keyframes op-slash{from{transform:rotate(-2deg) scaleX(0)}to{transform:rotate(-2deg) scaleX(1)}}
 .is-intro .ghost{animation:op-fade .9s ease-out .3s both}
