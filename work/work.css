@@ -21,7 +21,8 @@ main{max-width:1240px;margin:0 auto;padding:0 var(--edge) 140px;overflow-x:clip}
 main:focus{outline:none}
 
 /* Ghost: the PV's giant blurred grotesk behind the board (decoration; drifts with scroll). */
-.ghost{position:absolute;right:-2vw;top:40px;z-index:-1;margin:0;pointer-events:none;
+.ghost-wrap{position:absolute;left:0;top:0;width:100%;height:680px;overflow:hidden;z-index:0;pointer-events:none}
+.ghost{position:absolute;right:-2vw;top:100px;margin:0;pointer-events:none;
   font:800 clamp(140px,30vw,440px)/.8 var(--sans);letter-spacing:-.06em;color:rgb(18 19 19 / .07);filter:blur(5px);
   transform:translateX(var(--drift,0px));white-space:nowrap}
 
