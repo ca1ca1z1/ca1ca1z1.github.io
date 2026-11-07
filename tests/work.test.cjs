@@ -55,3 +55,22 @@ assert(sway(.5).tilt > sway(.2).tilt && sway(-.5).tilt === sway(.5).tilt);
 assert.strictEqual(sway(5).tilt, sway(1).tilt, 'clamped');
 assert(sway(.5).drift < 0 && sway(-.5).drift > 0, 'drifts against the offset');
 console.log('PASS: work acrostic (' + word + '), slash timing, thread reach and scroll effects.');
+
+// The wall: deterministic, both margins, every item reachable within the scroll range, glyphs spell the word.
+{
+  const {wallItems, entering} = require('../work/work.js');
+  const a = wallItems(900, 2000), b = wallItems(900, 2000);
+  assert.deepStrictEqual(a, b, 'deterministic');
+  assert(a.length > 8 && a.length <= 60, 'bounded count');
+  assert(a.some(i => i.side < 0) && a.some(i => i.side > 0), 'both margins');
+  for (const it of a) {
+    assert(it.depth >= .35 && it.depth <= .85 && it.u >= .15 && it.u <= .85);
+    assert(it.y <= 900 + 2000 * it.depth + 80, 'reachable: on screen at some scroll position');
+  }
+  const letters = a.filter(i => i.kind === 'glyph').map(i => i.letter).join('');
+  assert.strictEqual(letters, 'MADE'.repeat(4).slice(0, letters.length), 'glyphs spell the word in turn');
+  assert.strictEqual(entering(1000, 900), 0, 'below the screen: hidden');
+  assert.strictEqual(entering(400, 900), 1, 'well inside: whole');
+  assert(entering(800, 900) > 0 && entering(800, 900) < 1, 'fading in at the bottom edge');
+  console.log('PASS: work wall layout.');
+}
