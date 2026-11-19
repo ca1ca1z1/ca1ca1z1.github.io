@@ -2,27 +2,29 @@
    things are taken apart into numbered pieces and put back together on construction lines.
    - opening (1.7 s): hard cuts on a two-frame beat — negative, cobalt, paper — onto a construction
      plate (circles on axes, tangent circles on a baseline, numbered blades round a crosshair);
-     serrated cobalt fills grow in whole steps with stacked echo contours; the plate datamoshes into
-     horizontal streaks and tears away in bands; underneath, the title and the scaffold reassemble
-     in whole-cell jumps
+     serrated cobalt fills grow a frame at a time with stacked echo contours; the plate datamoshes
+     into level streaks (one column stretched, unsmoothed) and tears away in bands; underneath, the
+     title slices and the scaffold glide back together
    - scaffold: construction pieces built from the layout (orbits round the title, a compass on the
-     title rule, a station per entry on a margin axis, a ray fan, a serrated fill on the professional
-     entry, a cobalt slab cut at each joint), all numbered. A piece is assembled while it is in view
-     and steps apart, a whole cell at a time, as it leaves the viewport — scrolling deconstructs and
-     reconstructs. The title is cut into numbered slices that do the same; the slice under the
-     pointer steps aside
+     title rule, a station per entry on a margin axis, a ray fan, serrated fills — inked for
+     professional entries, a dashed outline for the rest — and a cobalt slab cut at each joint),
+     all numbered. The title is cut into numbered slices; the slice under the pointer steps aside
+   - reading (scroll position, continuous): a reading line runs from mid-screen at the top of the
+     page to the page's end at the bottom. The slab (or, on narrow screens, the rig) inks down to
+     it; a tracer rides the margin axis, inking it and each station it passes; the title orbits
+     turn as the title leaves; the ray fan opens as the reading line nears it; a point travels round
+     the great circle while its ruler ticks slide
    - pointer: a drafting compass placed whole on the nearest dot-grid node — construction lines
      through it, a 2px ring, an orange centre, the node's coordinates, and a dotted arc that runs
      counter-clockwise from +x to the far end of the ring's gap
    - click / tap on open paper: the ring's next sixth breaks off into shards (counter-clockwise from
      +x); after the sixth click, a 0.1 s pause, then the ring regrows in one turn (see strike/ringAt)
-   - entry selection (hover or keyboard focus): CSS — a serrated cobalt flood steps up the plate and
-     echo contours step out behind it
-   - scroll speed: datamosh streak clusters with a hard edge
-   Two tiers. Full: everything above. Reduced (prefers-reduced-motion): no opening, deconstruction,
-   shards, regrowth turn or streaks; the scaffold stands assembled, the compass remains, its ring
-   loses sectors and returns instantly, the title slice under the pointer shows its number, and the
-   plate fill is instant (CSS).
+   - entry selection (hover or keyboard focus): CSS — a serrated cobalt flood rises up the plate and
+     echo contours open out behind it
+   Two tiers. Full: everything above. Reduced (prefers-reduced-motion): no opening, reading motion,
+   shards or regrowth turn; the scaffold stands assembled and fully inked, the compass remains, its
+   ring loses sectors and returns instantly, the title slice under the pointer shows its number,
+   and the plate fill is instant (CSS).
    The dot grid is CSS in page coordinates and the scaffold is page-anchored DOM, so both scroll
    natively. One requestAnimationFrame per frame; the loop sleeps when nothing moves. */
 (function (root, factory) {
@@ -30,13 +32,14 @@
   else root.ExperienceScene = factory();
 })(typeof window !== 'undefined' ? window : this, function () {
   'use strict';
-  const CELL = 31, NODE = 62, OFF = 31, BEAT = 84, INTRO_MS = 1700;
-  // Opening timeline (ms): three hard cuts, then the fills grow and the plate moshes, a step per beat.
+  const CELL = 31, NODE = 62, OFF = 31, BEAT = 84, FRAME = 42, INTRO_MS = 1700;
+  // Opening timeline (ms): three hard cuts a beat apart, then the fills grow and the plate moshes
+  // a frame (24 fps) at a time.
   const CUT_NEG = BEAT, CUT_COBALT = 2 * BEAT, CUT_BAR = 3 * BEAT;
-  const GROW_STEPS = 6, GROW_END = CUT_BAR + GROW_STEPS * BEAT;
-  const MOSH_STEPS = 4, MOSH_END = GROW_END + MOSH_STEPS * BEAT;
+  const GROW_STEPS = 12, GROW_END = CUT_BAR + GROW_STEPS * FRAME;
+  const MOSH_STEPS = 8, MOSH_END = GROW_END + MOSH_STEPS * FRAME;
   const TEAR_START = MOSH_END, TEAR_END = 1560, BAND_DELAY = 260;
-  const ASSEMBLE_START = 1100, ASSEMBLE_STEPS = 3, SMEAR_MS = 240;
+  const ASSEMBLE_START = 1000, ASSEMBLE_MS = 400;
   const COBALT = '29,68,200', PAPER = '205,212,212', ORANGE = '255,90,31', INK = '16,16,16', WHITE = '243,243,237';
   const clamp = x => Math.max(0, Math.min(1, x));
   const out = x => 1 - Math.pow(1 - clamp(x), 3);
@@ -62,9 +65,9 @@
     });
     return list;
   }
-  // Opening state at t ms. Every change lands on a beat: no easing until the tear.
+  // Opening state at t ms. Cuts land on the beat, growth and mosh on frames: no easing until the tear.
   function intro(t) {
-    const stepIn = (start, n) => t < start ? 0 : Math.min(n, Math.floor((t - start) / BEAT) + 1) / n;
+    const stepIn = (start, n) => t < start ? 0 : Math.min(n, Math.floor((t - start) / FRAME) + 1) / n;
     return {
       ground: t < CUT_NEG ? 'neg' : t < CUT_COBALT ? 'cobalt' : 'paper',
       bar: t >= CUT_COBALT && t < CUT_BAR,
@@ -81,16 +84,21 @@
     const len = Math.round(w * band.reach * clamp(m));
     return band.dir > 0 ? {src: Math.min(w - 1, w - len), x: w - len, len} : {src: Math.min(w - 1, len), x: 0, len};
   }
-  // Opening reassembly of piece i: apart (1) until its start, then together in ASSEMBLE_STEPS jumps.
+  // Opening reassembly of piece i: apart (1) until its start, then gliding home over ASSEMBLE_MS.
   function assemble(t, i) {
-    const s = ASSEMBLE_START + Math.min(i, 8) * 48;
-    return t < s ? 1 : 1 - Math.min(ASSEMBLE_STEPS, Math.floor((t - s) / BEAT) + 1) / ASSEMBLE_STEPS;
+    const s = ASSEMBLE_START + Math.min(i, 8) * 32;
+    return t < s ? 1 : 1 - out((t - s) / ASSEMBLE_MS);
   }
-  // Deconstruction from position: 0 while a piece's centre (viewport y) is well inside the screen,
-  // rising to 1 as it leaves past either edge.
-  const apart = (y, h) => clamp(Math.max(.12 * h - y, y - .88 * h) / (.3 * h));
-  // Offset of a piece apart by a, whose full displacement is amp cells: whole cells only.
-  const shift = (a, amp) => Math.round(a * amp) * CELL + 0;
+  // Reading line (page y) for a scroll position: half-way down the screen at the top of the page,
+  // reaching the page's end when scrolled to the bottom.
+  function readLine(sy, h, docH) {
+    const max = docH - h, k = max > 0 ? clamp(sy / max) : 1;
+    return sy + h * (.5 + .5 * k);
+  }
+  // How far the reading line has inked a span [top, bottom] (0..1).
+  const inkAt = (y, top, bottom) => bottom > top ? clamp((y - top) / (bottom - top)) : (y >= top ? 1 : 0);
+  // A fan ray's angle as the fan opens (q 0..1): from near-vertical (a quarter open) to its own angle.
+  const fanAngle = (base, q) => -Math.PI / 2 + (base + Math.PI / 2) * (.25 + .75 * clamp(q));
   // The title's slices: top and bottom (% of the line box, contiguous 0..100), displacement in cells
   // (alternating sides, 1..4), and the number each one carries.
   function slices(n = 7, seed = 24) {
@@ -103,12 +111,12 @@
     });
   }
   // A w×h block with a sawtooth edge on one side ('left' | 'right' | 'top' | 'bottom'), as the PV's
-  // feathered fills: teeth `tooth` px apart and `depth` px deep, and the far corner at the start of
-  // the edge cut off on a slant. Polygon points inside the box.
-  function serrate(w, h, side = 'left', tooth = 10, depth = 7) {
+  // feathered fills: teeth `tooth` px apart and `depth` px deep; with `slant`, the far corner at
+  // the start of the edge is cut off on a slant. Polygon points inside the box.
+  function serrate(w, h, side = 'left', tooth = 10, depth = 7, slant = true) {
     const vertical = side === 'left' || side === 'right', len = vertical ? h : w, across = vertical ? w : h;
-    const d = Math.min(depth, across), cut = Math.round(Math.min(across, len) * .45);
-    const uv = [[across - cut, 0], [across, cut], [across, len], [0, len]];
+    const d = Math.min(depth, across), cut = slant ? Math.round(Math.min(across, len) * .45) : 0;
+    const uv = cut ? [[across - cut, 0], [across, cut], [across, len], [0, len]] : [[across, 0], [across, len], [0, len]];
     for (let v = len; v > 0;) { v = Math.max(0, v - tooth); uv.push([d, v], [0, v]); }
     const map = {left: ([u, v]) => [u, v], right: ([u, v]) => [w - u, v], top: ([u, v]) => [v, u], bottom: ([u, v]) => [v, h - u]}[side];
     return uv.map(map);
@@ -237,11 +245,9 @@
       return {a, r: r + (g() - .5) * 4, drift: 3 + g() * 10, pts};
     });
   }
-  // Streak length (px) for a scroll speed (px/ms).
-  const smear = v => Math.round(Math.max(40, Math.min(600, Math.abs(v) * 160)));
-  const api = {CELL, NODE, OFF, BEAT, INTRO_MS, GROW_END, MOSH_END, TEAR_START, TEAR_END, TAU, SECTOR, REGEN_WAIT, REGEN_MS, SHARD_MS,
-    node, rng, bands, intro, tearAt, moshAt, assemble, apart, shift, slices, serrate, scaffold, bounds,
-    fresh, strike, ringAt, sectorShards, smear};
+  const api = {CELL, NODE, OFF, BEAT, FRAME, INTRO_MS, GROW_END, MOSH_END, TEAR_START, TEAR_END, ASSEMBLE_MS, TAU, SECTOR, REGEN_WAIT, REGEN_MS, SHARD_MS,
+    node, rng, bands, intro, tearAt, moshAt, assemble, readLine, inkAt, fanAngle, slices, serrate, scaffold, bounds,
+    fresh, strike, ringAt, sectorShards};
   if (typeof document === 'undefined') return api;
 
   const html = document.documentElement;
@@ -259,8 +265,8 @@
   let introOn = html.classList.contains('is-intro') && !reduce.matches, t0 = -1;
   const pointer = {x: 0, y: 0, on: false};
   const compass = {nx: NaN, ny: NaN};
-  let ringState = fresh(), shatters = [], selected = null, smears = [], lastScroll = {y: scrollY, t: performance.now()}, lastBurst = 0;
-  const dirty = {field: true, place: true, build: true};
+  let ringState = fresh(), shatters = [], selected = null;
+  const dirty = {field: true, place: true, build: true, read: true};
   if (!introOn) { html.classList.remove('is-intro'); veilEl.hidden = true; }
 
   // --- title slices ----------------------------------------------------------------------------
@@ -301,7 +307,8 @@
       head: {left: Math.round(hb.left), top: Math.round(hb.top + sy), bottom: Math.round(hb.bottom + sy), textRight: Math.round(wb.right)},
       title: {left: wb.left, right: wb.right, top: tb.top + sy, bottom: tb.bottom + sy},
       plates: lis.map(li => { const b = rect(li); return {top: Math.round(b.top + sy), bottom: Math.round(b.bottom + sy), pro: !!li.closest('.pro')}; }),
-      joints: [...document.querySelectorAll('.joint')].map(j => { const b = rect(j); return {x: Math.round(b.left), y: Math.round((b.top + b.bottom) / 2 + sy)}; })
+      joints: [...document.querySelectorAll('.joint')].map(j => { const b = rect(j); return {x: Math.round(b.left), y: Math.round((b.top + b.bottom) / 2 + sy)}; }),
+      logs: [...document.querySelectorAll('.log')].map(el => { const b = rect(el); return {el, top: b.top + sy, bottom: b.bottom + sy}; })
     };
   }
   const box = (cls, x, y, wd, ht) => {
@@ -350,18 +357,40 @@
     title = {left: L.title.left, right: L.title.right, top: L.title.top, bottom: L.title.bottom, mid: (L.title.top + L.title.bottom) / 2};
     const list = scaffold(L), frag = document.createDocumentFragment();
     pieces = [];
+    track = {docH: L.docH, logs: L.w >= 1100 ? [] : L.logs, orbits: [], stations: [], rays: [], fan: null, arc: null, axis: null, slab: null};
     list.forEach((p, i) => {
       const el = document.createElement('div');
       el.className = 'pc pc-' + p.kind; el.style.left = p.x + 'px'; el.style.top = p.y + 'px';
-      for (const q of p.parts) el.appendChild(part(q));
+      const els = p.parts.map(part);
+      els.forEach(e => el.appendChild(e));
       frag.appendChild(el);
       const b = bounds(p);
-      if (!p.fixed) pieces.push({el, i: i + 2, mid: (b[1] + b[3]) / 2, dx: p.dx, dy: p.dy, spin: p.spin, key: ''});
+      if (!p.fixed) pieces.push({el, i: i + 2, dx: p.dx, dy: p.dy, spin: p.spin, key: ''});
+      // What answers the reading line: the orbits turn, the axis inks down to a tracer, stations
+      // ink as it passes, the fan opens, a point travels round the great circle on sliding ticks.
+      if (p.kind === 'orbit') p.parts.forEach((q, k) => { if (q.t === 'ellipse') track.orbits.push({el: els[k], rot: q.rot, turn: track.orbits.length ? 12 : -16}); });
+      if (p.kind === 'axis') {
+        const ink = box('ink', -1, 0, 3, L.docH), tr = box('tr', -16, -6, 33, 12);
+        el.append(ink, tr);
+        track.axis = {ink, tr};
+      }
+      if (p.kind === 'station') track.stations.push({el, mid: (b[1] + b[3]) / 2, on: null});
+      if (p.kind === 'fan') {
+        p.parts.forEach((q, k) => { if (q.t === 'ray') track.rays.push({el: els[k], base: Math.atan2(q.y2 - q.y1, q.x2 - q.x1)}); });
+        track.fan = {top: b[1], bottom: p.y};
+      }
+      if (p.kind === 'arc') {
+        const k = p.parts.findIndex(q => q.t === 'node'), R0 = -p.parts[k].cx;
+        track.arc = {node: els[k], ticks: els[p.parts.findIndex(q => q.t === 'ticks')], R: R0, top: p.y - R0, bottom: p.y + R0};
+      }
     });
     // Slab down the left edge, cut by a paper bar at the title rule and at each joint; each cut
-    // runs on as a construction line to what it marks.
+    // runs on as a construction line to what it marks. It inks down to the reading line.
+    html.classList.toggle('has-slab', L.w >= 1100);
     if (L.w >= 1100) {
-      const slab = box('slab', 0, L.bar, CELL, L.docH - L.bar);
+      const slab = box('slab', 0, L.bar, CELL, L.docH - L.bar), ink = box('ink', 0, 0, CELL, L.docH - L.bar);
+      slab.appendChild(ink);
+      track.slab = {ink, top: L.bar};
       for (const y of [L.head.bottom, ...L.joints.map(j => j.y)]) slab.appendChild(box('cut', 0, y - L.bar - 3, CELL, 6));
       frag.appendChild(slab);
       frag.appendChild(box('pc ln', CELL, L.head.bottom, L.head.left - CELL, 1));
@@ -369,27 +398,54 @@
     }
     scaf.textContent = '';                                         // … then writes
     scaf.style.height = L.docH + 'px';
+    scaf.classList.toggle('reading', live());
     scaf.appendChild(frag);
     for (const c of cuts) c.key = '';
+    for (const l of L.logs) { l.v = ''; l.el.style.removeProperty('--ink'); }
   }
-  // Place the title slices and scaffold pieces: apart by scroll position, plus the opening's
-  // reassembly. Writes only when a piece's whole-cell position changes.
+  // Place the title slices and scaffold pieces: the opening's reassembly and the title slice under
+  // the pointer stepping aside. Writes only on change.
   function place(now) {
-    const sy = scrollY, ti = introOn ? (t0 < 0 ? 0 : now - t0) : -1, motion = live();
-    const ta = motion ? apart(title.mid - sy, h) : 0;
+    const ti = introOn ? (t0 < 0 ? 0 : now - t0) : -1, motion = live();
     cuts.forEach((c, i) => {
-      let a = ta;
-      if (ti >= 0) a = Math.max(a, assemble(ti, i));
+      const a = ti >= 0 ? assemble(ti, i) : 0;
       const near = hoverSlice < 0 ? Infinity : Math.abs(i - hoverSlice), nudge = motion && near < 2 ? (2 - near) * Math.sign(c.s.amp) * CELL : 0;
-      const x = shift(a, c.s.amp) + nudge, key = String(x), off = x !== 0 || i === hoverSlice;
+      const x = Math.round(a * c.s.amp * CELL) + nudge, key = String(x), off = x !== 0 || i === hoverSlice;
       if (key !== c.key) { c.key = key; c.el.style.transform = x ? `translateX(${x}px)` : ''; }
       if (off !== c.off) { c.off = off; c.el.classList.toggle('off', off); }
     });
     for (const p of pieces) {
-      let a = motion ? apart(p.mid - sy, h) : 0;
-      if (ti >= 0) a = Math.max(a, assemble(ti, p.i));
-      const x = shift(a, p.dx), y = shift(a, p.dy), r = Math.round(a * p.spin) * 12, key = x + ',' + y + ',' + r;
+      const a = ti >= 0 ? assemble(ti, p.i) : 0;
+      const x = Math.round(a * p.dx * CELL), y = Math.round(a * p.dy * CELL), r = Math.round(a * p.spin * 120) / 10, key = x + ',' + y + ',' + r;
       if (key !== p.key) { p.key = key; p.el.style.transform = key === '0,0,0' ? '' : `translate(${x}px,${y}px)` + (r ? ` rotate(${r}deg)` : ''); }
+    }
+  }
+  // The background answers reading (full tier): continuous with the scroll position, written only
+  // when a value changes; every moving element is its own layer (CSS will-change).
+  let track = null;
+  const set = (el, prop, v) => { if (el._v !== v) { el._v = v; el.style[prop] = v; } };
+  function read() {
+    if (!track || !live()) return;
+    const sy = scrollY, y = readLine(sy, h, track.docH), k = clamp(sy / h);
+    for (const l of track.logs) {
+      const v = inkAt(y, l.top, l.bottom).toFixed(3);
+      if (l.v !== v) { l.v = v; l.el.style.setProperty('--ink', v); }
+    }
+    if (track.slab) set(track.slab.ink, 'transform', `scaleY(${inkAt(y, track.slab.top, track.docH).toFixed(4)})`);
+    for (const o of track.orbits) set(o.el, 'transform', `rotate(${(o.rot + o.turn * k).toFixed(2)}deg)`);
+    if (track.axis) {
+      set(track.axis.ink, 'transform', `scaleY(${clamp(y / track.docH).toFixed(4)})`);
+      set(track.axis.tr, 'transform', `translateY(${Math.round(y)}px)`);
+      for (const st of track.stations) { const on = y >= st.mid; if (on !== st.on) { st.on = on; st.el.classList.toggle('on', on); } }
+    }
+    if (track.fan) {
+      const q = inkAt(y, track.fan.top, track.fan.bottom);
+      for (const r of track.rays) set(r.el, 'transform', `rotate(${fanAngle(r.base, q).toFixed(4)}rad)`);
+    }
+    if (track.arc) {
+      const a = track.arc, th = Math.PI + inkAt(y, a.top, a.bottom) * Math.PI * .75;
+      set(a.node, 'transform', `translate(${(a.R * Math.cos(th) + a.R).toFixed(1)}px,${(a.R * Math.sin(th)).toFixed(1)}px)`);
+      set(a.ticks, 'backgroundPosition', `0 4px,${-Math.round(sy * .5)}px 0`);
     }
   }
 
@@ -400,18 +456,19 @@
   function diagram() {
     const tall = h > w, R0 = Math.round(Math.min(w * (tall ? .2 : .15), h * .27)), r = Math.round(R0 * .3), cy = Math.round(h * .4);
     const xs = [Math.round(w * .2), Math.round(w * .8)], cx = Math.round(w / 2), sy = Math.round(h * .5), L = Math.min(w * (tall ? .26 : .14), h * .26);
-    const blades = [], aw = Math.round(Math.max(26, w * .042)), headY = Math.round(h * .28);
-    [-16, 4, 24, 44, 64].forEach((deg, j) => [-1, 1].forEach(side => {
-      const a = deg * Math.PI / 180, len = L * (1.05 - j * .1), rx = cx + side * (aw * .6 + j * 3), ry = sy + 8 + j * h * .02;
-      const ux = side * Math.cos(a), uy = Math.sin(a), nx = -uy * side, ny = ux * side, wd = 13 + j * 2;
-      const at = (k, m) => [rx + ux * len * k + nx * wd * m, ry + uy * len * k + ny * wd * m];
-      blades.push({pts: [at(0, -.4), at(0, .4), at(.8, .5), at(1, -.1), at(.7, -.8)], label: at(.6, -.12), n: 2 * j + (side < 0 ? 1 : 2)});
+    const blades = [];
+    [-14, 6, 26, 46, 66].forEach((deg, j) => [-1, 1].forEach(side => {
+      const a = deg * Math.PI / 180, len = L * (1 - j * .1), rx = cx + side * (w * .025 + j * 4), ry = sy + 6 + j * h * .018;
+      const ux = side * Math.cos(a), uy = Math.sin(a), nx = -uy, ny = ux, wd = 7 + j * 1.5;
+      const tip = [rx + ux * len, ry + uy * len];
+      blades.push({pts: [[rx + nx * wd, ry + ny * wd], [rx - nx * wd * .4, ry - ny * wd * .4], [tip[0] - nx * wd * .5, tip[1] - ny * wd * .5], tip],
+        label: [rx + ux * len * .55 + nx * 14, ry + uy * len * .55 + ny * 14], n: 2 * j + (side < 0 ? 1 : 2)});
     }));
-    const fw = Math.round(Math.max(44, R0 * .62));
-    return {R: R0, r, cy, xs, base: cy + R0 + 2 * r, cx, sy, aw, staff: L * 1.3, headY, blades, fills: [
-      {x: xs[0] - Math.round(R0 * .55), y: cy - Math.round(R0 * .78), w: fw, h: Math.round(R0 * 2), side: 'right', from: 'top', n: 11},
-      {x: Math.round(w * .62), y: 0, w: Math.round(fw * 1.1), h: Math.round(Math.min(h * .38, cy - R0 * .4)), side: 'left', from: 'top', n: 12},
-      {x: xs[1] + Math.round(R0 * .28), y: cy - Math.round(R0 * .12), w: Math.round(fw * .85), h: Math.round(R0 * .95), side: 'right', from: 'bottom', n: 13}]};
+    const fw = Math.round(Math.max(40, R0 * .5));
+    return {R: R0, r, cy, xs, base: cy + R0 + 2 * r, cx, sy, staff: L * 1.25, headY: Math.round(h * .3), blades, fills: [
+      {x: xs[0] - Math.round(R0 * .45), y: cy - Math.round(R0 * .55), w: fw, h: Math.round(R0 * 1.8), side: 'right', from: 'top'},
+      {x: Math.round(w * .63), y: 0, w: fw, h: Math.round(Math.min(h * .34, cy - R0 * .4)), side: 'left', from: 'top'},
+      {x: xs[1] + Math.round(R0 * .35), y: cy - Math.round(R0 * .2), w: Math.round(fw * .8), h: Math.round(R0 * .8), side: 'right', from: 'bottom'}]};
   }
   function drawPlate(c, s) {
     const g = dia, neg = s.ground === 'neg', cob = s.ground === 'cobalt';
@@ -427,8 +484,6 @@
     c.moveTo(g.cx - 12, g.headY + .5); c.lineTo(g.cx + 12, g.headY + .5); c.moveTo(g.cx + .5, g.headY - 12); c.lineTo(g.cx + .5, g.headY + 12);
     c.moveTo(g.cx + .5, g.headY + 30); c.lineTo(g.cx + .5, h);
     c.stroke();
-    // The figure, abstracted: an arch standing on the page's foot, its head on the crosshair.
-    c.beginPath(); c.moveTo(g.cx - g.aw + .5, h); c.lineTo(g.cx - g.aw + .5, g.headY); c.arc(g.cx + .5, g.headY, g.aw, Math.PI, 0); c.lineTo(g.cx + g.aw + .5, h); c.stroke();
     for (const x of g.xs) {
       c.beginPath(); c.arc(x, g.cy, g.R, 0, TAU); c.stroke();
       c.beginPath(); c.arc(x, g.cy + g.R + g.r, g.r, 0, TAU); c.stroke();
@@ -443,32 +498,28 @@
     }
     if (s.grow > 0 && s.ground === 'paper') {
       for (const f of g.fills) {
-        const fh = Math.max(1, Math.round(f.h * s.grow)), fy = f.from === 'top' ? f.y : f.y + f.h - fh, pts = serrate(f.w, fh, f.side, 14, 12);
+        const fh = Math.max(1, Math.round(f.h * s.grow)), fy = f.from === 'top' ? f.y : f.y + f.h - fh, pts = serrate(f.w, fh, f.side, 10, 7, false);
         const path = (ox, oy) => { c.beginPath(); pts.forEach(([x, y], j) => j ? c.lineTo(f.x + x + ox, fy + y + oy) : c.moveTo(f.x + x + ox, fy + y + oy)); c.closePath(); };
-        for (let e = 4; e >= 1; e--) { path(-6 * e, 9 * e); c.fillStyle = ground; c.fill(); c.strokeStyle = rgba(COBALT, .9 - e * .15); c.stroke(); }
+        for (let e = 3; e >= 1; e--) { path(-5 * e, 7 * e); c.fillStyle = ground; c.fill(); c.strokeStyle = rgba(COBALT, .8 - e * .15); c.stroke(); }
         path(0, 0); c.fillStyle = rgba(COBALT, 1); c.fill();
-        c.fillStyle = rgba(COBALT, 1); c.fillText(String(f.n), f.x + f.w / 2 - 24, fy + fh + 48);
       }
     }
     if (s.bar) { c.fillStyle = rgba(COBALT, 1); c.fillRect(Math.round(w * .955), 0, Math.ceil(w * .045), h); }
   }
   const offscreen = () => { const c = document.createElement('canvas'); c.width = veilEl.width; c.height = veilEl.height; const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); return [c, g]; };
-  // Streak each band of `src` into `g` (device px) at mosh m: a narrow strip at the streak's inner
-  // edge is stretched across it, so lines and dots smear into rows; then a cobalt cast.
+  // Streak each band of `src` into `g` (device px) at mosh m: the column at the streak's inner
+  // edge is stretched across it, unsmoothed, so every streak and every gap is level; then a light
+  // cobalt cast.
   function mosh(g, src, m) {
-    const S = 36;
     g.setTransform(1, 0, 0, 1, 0, 0);
-    g.globalCompositeOperation = 'source-over';
+    g.imageSmoothingEnabled = false;
     g.drawImage(src, 0, 0);
     for (const b of plateBands) {
       const s = moshAt(m, b, w), sy = Math.round(b.y * dpr), sh = Math.max(1, Math.round(b.h * dpr));
-      if (s.len <= 0) continue;
-      const sx = Math.max(0, Math.min(w - S, b.dir > 0 ? s.src - S : s.src));
-      g.drawImage(src, Math.round(sx * dpr), sy, S * dpr, sh, Math.round(s.x * dpr), sy, Math.round(s.len * dpr), sh);
+      if (s.len > 0) g.drawImage(src, Math.round(s.src * dpr), sy, 1, sh, Math.round(s.x * dpr), sy, Math.round(s.len * dpr), sh);
     }
-    g.globalCompositeOperation = 'multiply';
-    g.fillStyle = rgba(COBALT, .5 * m); g.fillRect(0, 0, src.width, src.height);
-    g.globalCompositeOperation = 'source-over';
+    g.imageSmoothingEnabled = true;
+    g.fillStyle = rgba(COBALT, .22 * m); g.fillRect(0, 0, src.width, src.height);
   }
   function drawVeil(t) {
     const s = intro(t);
@@ -552,31 +603,16 @@
     }
     ctx.globalAlpha = 1;
   }
-  // Streak clusters (the PV's datamosh): rows of streaks running from a hard vertical edge,
-  // shortening and fading in three steps.
-  function drawSmears(now) {
-    smears = smears.filter(s => now - s.t0 < SMEAR_MS);
-    for (const s of smears) {
-      const k = Math.floor((now - s.t0) / SMEAR_MS * 3) / 3;
-      ctx.fillStyle = rgba(COBALT, .3 * (1 - k));
-      for (const r of s.rows) {
-        const len = Math.round(r.len * (1 - k * .5));
-        ctx.fillRect(s.dir > 0 ? s.edge : s.edge - len, s.y + r.y, len, r.h);
-      }
-      ctx.fillStyle = rgba(COBALT, .5 * (1 - k));
-      ctx.fillRect(s.edge, s.y, 1, s.h);
-    }
-  }
   function draw(now) {
     ctx.clearRect(0, 0, w, h);
     if (introOn) return;
-    drawSmears(now); drawCompass(now); drawShatters(now);
+    drawCompass(now); drawShatters(now);
   }
 
   // --- one scheduler ----------------------------------------------------------------------------
   function frame(now) {
     raf = 0;
-    if (dirty.build) { dirty.build = false; build(); dirty.place = true; }
+    if (dirty.build) { dirty.build = false; build(); dirty.place = dirty.read = true; }
     if (introOn) {
       if (t0 < 0) { t0 = now; veilEl.style.background = 'transparent'; }
       const t = now - t0;
@@ -586,9 +622,10 @@
       dirty.place = true;
     }
     if (dirty.place) { dirty.place = false; place(now); }
-    const busy = shatters.length || smears.length || ringState.broken >= 6;
+    if (dirty.read) { dirty.read = false; read(); }
+    const busy = shatters.length || ringState.broken >= 6;
     if (dirty.field || busy) { dirty.field = false; draw(now); }
-    if (introOn || shatters.length || smears.length || ringState.broken >= 6) raf = requestAnimationFrame(frame);
+    if (introOn || busy) raf = requestAnimationFrame(frame);
   }
   function request(...keys) {
     for (const k of keys) dirty[k] = true;
@@ -631,16 +668,8 @@
   html.addEventListener('pointerleave', () => { pointer.on = false; hover(); request('field'); });
 
   addEventListener('scroll', () => {
-    const now = performance.now(), v = (scrollY - lastScroll.y) / Math.max(1, now - lastScroll.t);
-    lastScroll = {y: scrollY, t: now};
-    if (live() && Math.abs(v) > .15 && now - lastBurst > 70 && smears.length < 12) {
-      lastBurst = now;
-      const bh = 12 + Math.round(Math.random() * 40), rows = [];
-      for (let y = 0; y < bh;) { const rh = 1 + Math.floor(Math.random() * 3); rows.push({y, h: rh, len: smear(v) * (.3 + Math.random() * .7)}); y += rh + 1 + Math.floor(Math.random() * 4); }
-      smears.push({y: Math.round(Math.random() * (h - bh)), h: bh, edge: Math.round(w * (.1 + Math.random() * .8)), dir: Math.random() < .5 ? -1 : 1, rows, t0: now});
-    }
     if (pointer.on) { compassTo(); hover(); }
-    request('field', 'place');
+    request('field', 'place', 'read');
   }, {passive: true});
 
   // Entry selection: hover and keyboard focus share one response (the flood itself is CSS).
@@ -661,9 +690,9 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => request('build'));
   document.addEventListener('visibilitychange', () => { if (!document.hidden) request('field'); });
   reduce.addEventListener?.('change', () => {
-    shatters = []; smears = [];
+    shatters = [];
     if (introOn) endIntro();
-    request('field', 'place');
+    request('build', 'field', 'place');
   });
   resize();
   return api;

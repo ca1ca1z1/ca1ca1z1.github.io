@@ -1,11 +1,11 @@
-// Experience page motion: grid nodes, opening cuts and tear, datamosh, reassembly, deconstruction,
-// title slices, serrated fills, scaffold, compass ring, shards and streaks.
+// Experience page motion: grid nodes, opening cuts and tear, datamosh, reassembly, reading response,
+// title slices, serrated fills, scaffold, compass ring and shards.
 const assert = require('assert');
 const fs = require('fs'), path = require('path');
 const X = require('../experience/experience.js');
-const {CELL, NODE, OFF, BEAT, INTRO_MS, GROW_END, MOSH_END, TEAR_START, TEAR_END, TAU, SECTOR, REGEN_WAIT, REGEN_MS, SHARD_MS,
-  node, rng, bands, intro, tearAt, moshAt, assemble, apart, shift, slices, serrate, scaffold, bounds,
-  fresh, strike, ringAt, sectorShards, smear} = X;
+const {CELL, NODE, OFF, BEAT, FRAME, INTRO_MS, GROW_END, MOSH_END, TEAR_START, TEAR_END, ASSEMBLE_MS, TAU, SECTOR, REGEN_WAIT, REGEN_MS, SHARD_MS,
+  node, rng, bands, intro, tearAt, moshAt, assemble, readLine, inkAt, fanAngle, slices, serrate, scaffold, bounds,
+  fresh, strike, ringAt, sectorShards} = X;
 
 assert.strictEqual(CELL, 31, 'grid matches the entrance cell');
 assert.strictEqual(NODE, 2 * CELL, 'dot every two cells');
@@ -41,7 +41,7 @@ for (const h of [600, 812, 1080]) {
 }
 
 // Opening: three hard cuts on the beat (negative, cobalt, paper with the bar), then the fills grow
-// and the plate moshes in whole steps, never easing; the tear follows; done at INTRO_MS.
+// and the plate moshes a frame (24 fps) at a time, never easing; the tear follows; done at INTRO_MS.
 assert.strictEqual(intro(0).ground, 'neg');
 assert.strictEqual(intro(BEAT).ground, 'cobalt');
 assert.strictEqual(intro(2 * BEAT).ground, 'paper');
@@ -55,7 +55,9 @@ for (let t = 0; t < INTRO_MS; t += 7) {
   if (t + 7 < INTRO_MS) { const n = intro(t + 7); assert(n.grow >= s.grow && n.mosh >= s.mosh, 'steps only advance'); }
   if (s.mosh > 0) assert.strictEqual(s.grow, 1, 'fills are whole before the mosh');
 }
-assert.strictEqual(grows.size, 7, 'six whole growth steps after zero');
+assert.strictEqual(FRAME * 2, BEAT, 'growth and mosh step at twice the cut rate');
+assert.strictEqual(grows.size, 13, 'twelve growth frames after zero');
+assert.strictEqual(GROW_END - 3 * BEAT, 12 * FRAME);
 assert.strictEqual(intro(GROW_END - 1).mosh, 0);
 assert.strictEqual(intro(MOSH_END - 1).mosh, 1, 'mosh complete before the tear');
 assert(!intro(TEAR_START - 1).tearing && intro(TEAR_START).tearing);
@@ -77,34 +79,41 @@ for (const band of bands(900)) for (const m of [0, .25, .5, 1]) {
 }
 assert.strictEqual(moshAt(0, {dir: 1, reach: 1}, 800).len, 0);
 
-// Reassembly: apart until each piece's start, then together in whole steps, all done in time.
+// Reassembly: apart until each piece's start, then a smooth glide home (no frame jumps more than
+// a sixth of the way), all done in time and while the plate is still tearing away.
 for (let i = 0; i < 20; i++) {
   assert.strictEqual(assemble(0, i), 1);
+  assert.strictEqual(assemble(999, i), 1, 'pieces hold apart under the plate');
   let prev = 1;
-  for (let t = 0; t <= INTRO_MS; t += 8) {
+  for (let t = 0; t <= INTRO_MS; t += 16) {
     const k = assemble(t, i);
-    assert(k <= prev, 'reassembly only advances'); prev = k;
-    assert([0, 1 / 3, 2 / 3, 1].some(v => Math.abs(v - k) < 1e-9), 'whole steps only');
+    assert(k <= prev, 'reassembly only advances');
+    assert(prev - k <= 1 / 6, 'glides: no big jumps at 60 fps');
+    prev = k;
   }
   assert.strictEqual(assemble(INTRO_MS, i), 0, 'every piece home before the opening ends');
 }
-assert(assemble(TEAR_START, 0) === 1, 'pieces stay apart until the plate starts to tear');
+assert(assemble(TEAR_END, 0) === 0 || assemble(TEAR_END, 0) < .1, 'home as the last bands leave');
 
-// Deconstruction: none well inside the screen, growing past either edge, capped at 1.
-assert.strictEqual(apart(450, 900), 0);
-assert.strictEqual(apart(120, 900), 0);
-assert(apart(0, 900) > 0 && apart(-200, 900) > apart(0, 900));
-assert(apart(900, 900) > 0);
-assert.strictEqual(apart(-5000, 900), 1);
-assert.strictEqual(apart(5000, 900), 1);
-// Shifts are whole cells, never -0.
-for (const amp of [-4, -1, 1, 3]) for (const k of [0, .2, .5, .8, 1]) {
-  const s = shift(k, amp);
-  assert.strictEqual(Math.abs(s % CELL), 0); assert(!Object.is(s, -0));
-  assert(Math.abs(s) <= Math.abs(amp) * CELL);
+// Reading line: half-way down the first screen at the top, the page's end at the bottom, always
+// moving with the scroll; a short page is read at once.
+assert.strictEqual(readLine(0, 900, 1468), 450);
+assert.strictEqual(readLine(568, 900, 1468), 1468);
+let last = -1;
+for (let sy = 0; sy <= 568; sy += 7) { const y = readLine(sy, 900, 1468); assert(y > last, 'reading line advances'); last = y; }
+assert.strictEqual(readLine(0, 900, 800), 900);
+// Ink across a span, and the fan opening from a quarter to its own angle.
+assert.strictEqual(inkAt(100, 200, 400), 0);
+assert.strictEqual(inkAt(300, 200, 400), .5);
+assert.strictEqual(inkAt(500, 200, 400), 1);
+assert.strictEqual(inkAt(200, 200, 200), 1);
+for (const base of [-2.6, -1.8, -1.2, -.6]) {
+  assert(Math.abs(fanAngle(base, 1) - base) < 1e-12, 'fully open at its own angle');
+  const q0 = fanAngle(base, 0) + Math.PI / 2;
+  assert(Math.abs(q0 - (base + Math.PI / 2) * .25) < 1e-12, 'a quarter open at the start');
+  assert(Math.abs(fanAngle(base, .5) + Math.PI / 2) < Math.abs(base + Math.PI / 2), 'opens monotonically');
 }
-assert.strictEqual(shift(1, -3), -93);
-assert(Object.is(shift(.1, -1), 0));
+assert(ASSEMBLE_MS <= 500);
 
 // Title slices: contiguous bands 0..100, alternating sides, 1–4 cells, numbered in order.
 const sl = slices();
@@ -192,15 +201,12 @@ for (let i = 0; i < 6; i++) {
   }
 }
 
-// Streak length grows with speed, within bounds.
-assert.strictEqual(smear(0), 40);
-assert(smear(2) > smear(1));
-assert.strictEqual(smear(100), 600);
 
 // Markup: one flood per plate, and the selection rule never uses :focus-within.
 const html = fs.readFileSync(path.join(__dirname, '..', 'experience', 'index.html'), 'utf8');
 const css = fs.readFileSync(path.join(__dirname, '..', 'experience', 'experience.css'), 'utf8');
 assert.strictEqual((html.match(/<li id="E-\d\d"/g) || []).length, (html.match(/class="fl"/g) || []).length, 'one flood per plate');
 assert(!/focus-within/.test(css), 'selection is hover or visible focus only');
-assert(/prefers-reduced-motion:reduce[\s\S]*animation:none/.test(css), 'reduced tier drops the stepped flood');
-console.log('PASS: experience opening, mosh, reassembly, deconstruction, slices, fills, scaffold, ring, shards, streaks.');
+assert(/prefers-reduced-motion:reduce[\s\S]*animation:none/.test(css), 'reduced tier drops the rising flood');
+assert(!/steps\(/.test(css.match(/Selection \(hover[\s\S]*?@keyframes echo-out/)[0]), 'the flood rises smoothly');
+console.log('PASS: experience opening, mosh, reassembly, reading response, slices, fills, scaffold, ring, shards.');
